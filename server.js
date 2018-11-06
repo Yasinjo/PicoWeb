@@ -7,7 +7,6 @@ app.get('/api', (req, res) => {
 
   })
 });
-
 const PORT = 9090;
 
 app.listen(PORT, () => {
