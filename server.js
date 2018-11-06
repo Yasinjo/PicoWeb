@@ -1,14 +1,13 @@
-var express = require('express');
-var app = express();
-var port = process.env.port || 9090;
+const express = require('express');
+const app = express();
+app.get('/api', (req, res) => {
+  res.status(200).send({
+    message: 'Yajouz'
+  })
+});
 
-//Respond with "hello world" for requests that hit our root "/"
-app.get("/", function (req, res) {
-    res.send("Deployment succeeded");
-   }); 
+const PORT = 9090;
 
-app.listen(port, function(){
-    var datetime = new Date();
-    var message = "Server message test " + port ;
-    console.log(message);
+app.listen(PORT, () => {
+  console.log(`server running on port ${PORT}`)
 });
