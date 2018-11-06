@@ -5,7 +5,6 @@ app.get('/api', (req, res) => {
     message: 'Yajouz'
   })
 });
-
 const PORT = 9090;
 
 app.listen(PORT, () => {
