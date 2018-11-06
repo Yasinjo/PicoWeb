@@ -9,6 +9,6 @@ app.get("/", function (req, res) {
 
 app.listen(port, function(){
     var datetime = new Date();
-    var message = "Server message test" + port ;
+    var message = "Server message test " + port ;
     console.log(message);
 });
