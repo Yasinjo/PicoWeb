@@ -4,6 +4,6 @@ var port = process.env.port || 1337;
 
 app.listen(port, function(){
     var datetime = new Date();
-    var message = "Server message" + port ;
+    var message = "Server message test" + port ;
     console.log(message);
 });
