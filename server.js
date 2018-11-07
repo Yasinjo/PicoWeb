@@ -5,7 +5,8 @@ app.get('/api', (req, res) => {
     objet : 'Jenkins CI CD msg',
     message: 'Its working Correctly',
     test : 'test message',
-    test1 : 'test 2'
+    test1 : 'test 2',
+    project : 'CHantit Project '
 
   })
 });
