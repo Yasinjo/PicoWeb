@@ -6,7 +6,7 @@ app.get('/api', (req, res) => {
     message: 'Its working Correctly',
     test : 'test message',
     test1 : 'test 2',
-    project : 'CHantit Project 221212512'
+    project : 'New push !!'
 
   })
 });
