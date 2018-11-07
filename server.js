@@ -2,12 +2,7 @@ const express = require('express');
 const app = express();
 app.get('/api', (req, res) => {
   res.status(200).send({
-    objet : 'Jenkins CI CD msg',
-    message: 'Its working Correctly',
-    test : 'test message',
-    test1 : 'test 2',
-    project : 'CHantit Project '
-
+    objet : 'Jenkins CI CD msg'
   })
 });
 const PORT = 9090;
