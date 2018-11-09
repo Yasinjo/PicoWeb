@@ -6,7 +6,8 @@ app.get('/api', (req, res) => {
     message: 'Its working Correctly',
     test : 'test message',
     test1 : 'test 2',
-    project : 'New push   15165165156!!'
+    project : 'New push   15165165156!!',
+    project2 : 'New push 1 !'
 
   })
 });
