@@ -1,5 +1,5 @@
 {
-  "name": "final-source-code",
+  "name": "nodeapiapp",
   "version": "0.1.0",
   "private": true,
   "main": "src/server/index.js",
