@@ -4,11 +4,8 @@
   "private": true,
   "main": "src/server/index.js",
   "scripts": {
-    "build": "webpack --mode production",
-    "start": "npm run build && node src/server/index.js",
-    "client": "webpack-dev-server --mode development --devtool inline-source-map --hot",
-    "server": "nodemon src/server/index.js",
-    "dev": "concurrently \"npm run server\" \"npm run client\"",
+    "start": "node src/server/index.js",
+    "dev": "nodemon src/server/index.js",
     "eject": "react-scripts eject"
   },
   "author": "slimaneakalia@gmail.com",
@@ -16,7 +13,14 @@
     "extends": "react-app"
   },
   "dependencies": {
+    "bcrypt-nodejs": "0.0.3",
     "express": "^4.16.4",
+    "jsonwebtoken": "^8.4.0",
+    "lodash": "^4.17.11",
+    "mongoose": "^5.3.12",
+    "multer": "^1.4.1",
+    "passport": "^0.4.0",
+    "passport-jwt": "^4.0.0",
     "react": "^16.5.2",
     "react-dom": "^16.5.2",
     "react-scripts": "2.0.4"

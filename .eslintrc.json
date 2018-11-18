@@ -9,6 +9,8 @@
     "no-console": "off",
     "comma-dangle": "off",
     "react/jsx-filename-extension": "off",
+    "prefer-promise-reject-errors": "off",
+    "no-underscore-dangle": "off",
     "linebreak-style": ["error", "windows"]
   }
 }
