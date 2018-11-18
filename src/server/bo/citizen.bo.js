@@ -5,24 +5,28 @@ const { Schema } = mongoose;
 
 const CitizenSchema = new Schema({
   phone_number: {
-    type: String,
+    type: Schema.Types.String,
     required: true,
     unique: true
   },
   full_name: {
-    type: String,
+    type: Schema.Types.String,
     required: true
   },
   latitude: {
-    type: Number,
+    type: Schema.Types.Number,
     required: true
   },
   longitude: {
-    type: Number,
+    type: Schema.Types.Number,
     required: true
   },
+  active: {
+    type: Schema.Types.Boolean,
+    default: true
+  },
   password: {
-    type: String,
+    type: Schema.Types.String,
     required: true
   }
 });
@@ -31,4 +35,11 @@ CitizenSchema.pre('save', preSave);
 
 CitizenSchema.methods.comparePassword = comparePassword;
 
-module.exports = mongoose.model('Citizen', CitizenSchema);
+CitizenSchema.methods.isActive = function isActive() {
+  return this.active;
+};
+
+const CitizenModel = mongoose.model('Citizen', CitizenSchema);
+CitizenModel.createIndexes();
+
+module.exports = CitizenModel;

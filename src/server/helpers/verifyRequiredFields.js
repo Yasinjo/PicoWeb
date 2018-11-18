@@ -1,8 +1,6 @@
 const _ = require('lodash');
 
-function verifyRequuiredFields(request, response, requiredKeys) {
-  console.log('request.body');
-  console.log(request.body);
+function verifyRequiredFields(request, response, requiredKeys) {
   return new Promise((resolve) => {
     const requiredKeysTest = _.every(requiredKeys, _.partial(_.has, request.body));
     if (requiredKeysTest) resolve();
@@ -10,4 +8,4 @@ function verifyRequuiredFields(request, response, requiredKeys) {
   });
 }
 
-module.exports = verifyRequuiredFields;
+module.exports = verifyRequiredFields;
