@@ -1,18 +1,18 @@
 const bcrypt = require('bcrypt-nodejs');
 
 function preSave(next) {
-  const citizen = this;
+  const user = this;
   if (this.isModified('password') || this.isNew) {
     return bcrypt.genSalt(10, (err, salt) => {
       if (err) {
         return next(err);
       }
 
-      return bcrypt.hash(citizen.password, salt, null, (hashError, hash) => {
+      return bcrypt.hash(user.password, salt, null, (hashError, hash) => {
         if (hashError) {
           return next(hashError);
         }
-        citizen.password = hash;
+        user.password = hash;
         return next();
       });
     });

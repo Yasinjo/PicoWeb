@@ -14,24 +14,25 @@ const PHONE_DUPLICATION_ERROR = 'Phone number already used';
 const CITIZEN_NOT_FOUND = 'Authentication failed. citizen not found.';
 const DEACTIVATED_ACCOUNT = 'Your account has been disabled because of a false alarm.';
 const WRONG_PASSWORD = 'Authentication failed. Wrong password.';
+const CITIZEN_AUTH_STRATEGY_NAME = 'Citizen-auth-strategy';
 const router = express.Router();
 
-addAuthStrategy(passport, Citizen, 'Citizen-strategy');
+addAuthStrategy(passport, Citizen, CITIZEN_AUTH_STRATEGY_NAME);
 
 function validateCitizen(requestBody) {
   return new Promise((resolve, reject) => {
-    Citizen.findOne({
-      phone_number: requestBody.phone_number
-    })
-      .then((citizen) => {
-        citizen.comparePassword(requestBody.password, (err, isMatch) => {
-          if (isMatch && !err) {
-            if (citizen.isActive()) resolve(citizen);
-            else reject({ msg: DEACTIVATED_ACCOUNT, status: 403 });
-          } else { reject({ msg: WRONG_PASSWORD, status: 400 }); }
+    GenericDAO.findOne(Citizen, { phone_number: requestBody.phone_number },
+      (err, citizen) => {
+        if (err || !citizen) return reject({ msg: CITIZEN_NOT_FOUND, status: 400 });
+
+        return citizen.comparePassword(requestBody.password, (errComp, isMatch) => {
+          if (isMatch && !errComp) {
+            if (citizen.isActive()) return resolve(citizen);
+            return reject({ msg: DEACTIVATED_ACCOUNT, status: 403 });
+          }
+          return reject({ msg: WRONG_PASSWORD, status: 400 });
         });
-      })
-      .catch(() => reject({ msg: CITIZEN_NOT_FOUND, status: 400 }));
+      });
   });
 }
 
@@ -63,4 +64,7 @@ router.post('/signin', (req, res) => {
   });
 });
 
-module.exports = router;
+module.exports = {
+  CITIZEN_AUTH_STRATEGY_NAME,
+  router
+};

@@ -17,7 +17,12 @@ function findOne(businessSchema, params, callback) {
   return businessSchema.findOne(params, callback);
 }
 
+function find(businessSchema, params, callback) {
+  return businessSchema.find(params, callback);
+}
+
 module.exports = {
   save,
+  find,
   findOne
 };

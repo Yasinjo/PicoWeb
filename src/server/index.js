@@ -10,8 +10,8 @@ const app = express();
 const apiRouter = express.Router();
 // Promise = require('bluebird');
 mongoose.Promise = Promise;
-apiRouter.use('/citizens', citizensRoutes);
-apiRouter.use('/hospitals', hospitalsRoutes);
+apiRouter.use('/citizens', citizensRoutes.router);
+apiRouter.use('/hospitals', hospitalsRoutes.router);
 
 app.use(express.static('dist'));
 app.use(express.json());
