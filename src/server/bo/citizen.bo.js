@@ -1,8 +1,15 @@
+/*
+  * @file-description : this file exports the citizen Schema
+  * @author{Slimane AKALIA} slimaneakalia@gmail.com
+*/
+
+// Import the required modules
 const mongoose = require('mongoose');
-const { preSave, comparePassword } = require('../helpers/schemasHelper');
+const { preSaveAccount, comparePassword } = require('../helpers/schemasHelper');
 
 const { Schema } = mongoose;
 
+// Create the Schema
 const CitizenSchema = new Schema({
   phone_number: {
     type: Schema.Types.String,
@@ -31,15 +38,16 @@ const CitizenSchema = new Schema({
   }
 });
 
-CitizenSchema.pre('save', preSave);
-
+// Add the Schema methods
+CitizenSchema.pre('save', preSaveAccount);
 CitizenSchema.methods.comparePassword = comparePassword;
-
 CitizenSchema.methods.isActive = function isActive() {
   return this.active;
 };
 
 const CitizenModel = mongoose.model('Citizen', CitizenSchema);
+// Create indexes for the mongoose model
 CitizenModel.createIndexes();
 
+// Export the module
 module.exports = CitizenModel;
