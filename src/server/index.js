@@ -14,7 +14,7 @@ const config = require('../../config/database');
 // Create the express app
 const app = express();
 // Initialize the API port
-const PORT = (process.env.PORT) ? process.env.PORT : 8080;
+const PORT = (process.env.PORT) ? process.env.PORT : 9090;
 
 // Create the API router
 const apiRouter = express.Router();
