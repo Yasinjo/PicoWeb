@@ -13,6 +13,8 @@ const config = require('../../config/database');
 
 // Create the express app
 const app = express();
+// create the logger middleware
+
 // Initialize the API port
 const PORT = (process.env.PORT) ? process.env.PORT : 9090;
 
@@ -26,6 +28,7 @@ mongoose.Promise = Promise;
 apiRouter.use('/citizens', citizensRoutes.router);
 apiRouter.use('/hospitals', hospitalsRoutes.router);
 
+// Add the logger to express app
 // Use plugins to parse the request body
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
@@ -44,7 +47,7 @@ app.use(passport.initialize());
 // Add a linstener on mongoose connection
 mongoose.connection.on('connected', () => {
   // Listen to a specific port
-  app.listen(PORT, () => console.log('Listening on port 8080!'));
+  app.listen(PORT, () => console.log(`Listening on port ${PORT}!`));
 });
 
 

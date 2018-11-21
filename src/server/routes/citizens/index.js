@@ -39,7 +39,7 @@ function validateCitizenAuth(requestBody) {
   // Create and return the promise
   return new Promise((resolve, reject) => {
     // Check the request body for the required fields
-    if (!requestBody.phone_number || requestBody.password) { return reject({ status: 400 }); }
+    if (!requestBody.phone_number || !requestBody.password) { return reject({ status: 400 }); }
 
     // Search the citizen in the database
     return GenericDAO.findOne(Citizen, { phone_number: requestBody.phone_number },

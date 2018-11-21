@@ -4,6 +4,9 @@
   * @author{Slimane AKALIA} slimaneakalia@gmail.com
 */
 
+// Import the required modules
+const Ambulance = require('../bo/ambulance.bo');
+
 /*
     * @function
     * @description : save a businness object to the database
@@ -44,9 +47,29 @@ function find(businessSchema, params, callback) {
   return businessSchema.find(params, callback);
 }
 
+/*
+    * @function
+    * @description : find multiple ambulances by hospital Id
+    * @param{hospitalId}[string] : the hospital Id
+    * @param{callback}[function] : the callback to call after executing the query
+*/
+function findAmbulancesByHospital(hospitalId, callback) {
+  // Create the query params
+  const queryParams = {
+    available: true,
+    $or: [
+      { hospital_id: { $exists: false } },
+      { hospital_id: hospitalId }
+    ]
+  };
+  // Find the results
+  return find(Ambulance, queryParams, callback);
+}
+
 // Export the module
 module.exports = {
   save,
   find,
-  findOne
+  findOne,
+  findAmbulancesByHospital
 };
