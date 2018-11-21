@@ -49,11 +49,11 @@ function find(businessSchema, params, callback) {
 
 /*
     * @function
-    * @description : find multiple ambulances by hospital Id
+    * @description : find available ambulances by hospital Id
     * @param{hospitalId}[string] : the hospital Id
     * @param{callback}[function] : the callback to call after executing the query
 */
-function findAmbulancesByHospital(hospitalId, callback) {
+function findAvailableAmbulancesByHospital(hospitalId, callback) {
   // Create the query params
   const queryParams = {
     available: true,
@@ -71,5 +71,5 @@ module.exports = {
   save,
   find,
   findOne,
-  findAmbulancesByHospital
+  findAvailableAmbulancesByHospital
 };
