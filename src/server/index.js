@@ -47,7 +47,7 @@ app.use(passport.initialize());
 // Add a linstener on mongoose connection
 mongoose.connection.on('connected', () => {
   // Listen to a specific port
-  app.listen(PORT, () => console.log(`Listening on port ${PORT}!`));
+  app.listen(PORT, () => console.log(`Listening on new port ${PORT}!`));
 });
 
 
