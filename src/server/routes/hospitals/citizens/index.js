@@ -16,8 +16,8 @@ const router = express.Router();
     * @route : GET /api/hospitals/citizens
     * @description : get all the hospitals
 */
-router.get('/', passport.authenticate(CITIZEN_AUTH_STRATEGY_NAME, { session: false }), (request, response) => getAllHospitals(request, response));
-
+router.get('/', passport.authenticate(CITIZEN_AUTH_STRATEGY_NAME, { session: false }),
+  (request, response) => getAllHospitals(request, response));
 
 /*
     * @route : GET /api/hospitals/citizens/<hospital_id>/ambulances

@@ -124,7 +124,7 @@ router.post('/signin', (req, res) => {
   validateCitizenAuth(req.body)
     .then((citizen) => {
       // If everything is correct, create a token
-      const token = jwt.sign(citizen.toJSON(), authConfig.secret);
+      const token = jwt.sign({ _id: citizen._id }, authConfig.secret);
       // Send the token in the response
       res.status(200).send({ success: true, token: `JWT ${token}` });
     }).catch(({ msg, status }) => {

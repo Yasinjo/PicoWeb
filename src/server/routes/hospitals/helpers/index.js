@@ -75,12 +75,13 @@ function getAmbulancesByHospital(request, response) {
   // Check the token
   if (token) {
     // If there is a token, fetch ambulances from database
-    return GenericDAO.findAvailableAmbulancesByHospital(request.params.hospital_id, (err, ambulances) => {
+    return GenericDAO.findAvailableAmbulancesByHospital(request.params.hospital_id,
+      (err, ambulances) => {
       // If there is an error, send it in response
-      if (err) response.status(500).send(err);
-      // Otherwise, send the hospitals in response
-      return response.status(200).send({ success: true, ambulances });
-    });
+        if (err) response.status(500).send(err);
+        // Otherwise, send the hospitals in response
+        return response.status(200).send({ success: true, ambulances });
+      });
   }
   // If there is no token, send a 403 response
   return response.status(403).send({ success: false });

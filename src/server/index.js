@@ -7,12 +7,18 @@
 const express = require('express');
 const mongoose = require('mongoose');
 const passport = require('passport');
+const http = require('http');
 const citizensRoutes = require('./routes/citizens/index');
 const hospitalsRoutes = require('./routes/hospitals/index');
+const alarmsRoutes = require('./routes/alarms/index');
+const webSockets = require('./web-sockets/index');
 const config = require('../../config/database');
 
 // Create the express app
 const app = express();
+const server = http.Server(app);
+webSockets.init(server);
+
 // create the logger middleware
 
 // Initialize the API port
@@ -27,6 +33,7 @@ mongoose.Promise = Promise;
 // Initialize routers
 apiRouter.use('/citizens', citizensRoutes.router);
 apiRouter.use('/hospitals', hospitalsRoutes.router);
+apiRouter.use('/alarms', alarmsRoutes.router);
 
 // Add the logger to express app
 // Use plugins to parse the request body
@@ -47,7 +54,7 @@ app.use(passport.initialize());
 // Add a linstener on mongoose connection
 mongoose.connection.on('connected', () => {
   // Listen to a specific port
-  app.listen(PORT, () => console.log(`Listening on port ${PORT}!`));
+  server.listen(PORT, () => console.log(`Listening on port ${PORT}!`));
 });
 
 

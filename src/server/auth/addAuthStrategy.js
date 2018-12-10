@@ -31,7 +31,7 @@ function addAuthStrategy(authManager, businessSchema, strategyName) {
     // To verify a token, we should find an existing item with the same id in the token
     GenericDAO.findOne(businessSchema, { id: jwtPayload.id }, (err, businessObject) => {
       if (err) { return done(err, false); }
-      return (businessObject) ? done(null, businessObject) : done(null, false);
+      return (businessObject) ? done(null, true) : done(null, false);
     });
   });
 

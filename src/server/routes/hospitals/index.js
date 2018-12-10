@@ -10,7 +10,7 @@ const hospitalsCitizensRouter = require('./citizens/index');
 // Create the router
 const router = express.Router();
 
-// seprate routes (for different uthentication strategy)
+// seprate routes (for different uthentication strategies)
 router.use('/citizens', hospitalsCitizensRouter.router);
 
 // Export the module
