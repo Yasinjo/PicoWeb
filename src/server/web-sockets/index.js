@@ -1,19 +1,24 @@
 const socketIO = require('socket.io');
 const { extractCitizenIdFromToken } = require('../auth/tokenExtractors');
+const GenericDAO = require('../dao/genericDAO');
+const Citizen = require('../bo/citizen.bo');
 
-const AUNTENTICATION_EVENT = 'AUNTENTICATION_EVENT';
-const AUNTENTICATED_EVENT = 'AUNTENTICATED_EVENT';
+const CITIZEN_AUNTENTICATION_EVENT = 'CITIZEN_AUNTENTICATION_EVENT';
+const CITIZEN_AUNTENTICATED_EVENT = 'CITIZEN_AUNTENTICATED_EVENT';
 
 let io = null;
 
 function socketAuth(socket) {
   socket.auth = false;
-  socket.on(AUNTENTICATION_EVENT, (data) => {
+  socket.on(CITIZEN_AUNTENTICATION_EVENT, (data) => {
     extractCitizenIdFromToken(data.token)
       .then((citizenId) => {
-        socket.auth = true;
-        socket.citizenId = citizenId;
-        socket.emit(AUNTENTICATED_EVENT, { success: true, socket_id: socket.id });
+        GenericDAO.findOne(Citizen, { _id: citizenId }, (err) => {
+          if (err) return;
+          socket.auth = true;
+          socket.citizenId = citizenId;
+          socket.emit(CITIZEN_AUNTENTICATED_EVENT, { success: true, socket_id: socket.id });
+        });
         // Android communication
       }).catch();
   });
@@ -36,7 +41,7 @@ function matchSocketToToken(socketId, token) {
     if (!socket) return reject();
 
     return extractCitizenIdFromToken(token)
-      .then(citizenId => ((socket.citizenId === citizenId) ? resolve(socket) : reject()))
+      .then(citizenId => ((socket.citizenId === citizenId) ? resolve(socket, citizenId) : reject()))
       .catch(() => reject);
   });
 }

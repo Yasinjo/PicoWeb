@@ -1,5 +1,6 @@
 const GenericDAO = require('../../../dao/genericDAO');
 const Ambulance = require('../../../bo/ambulance.bo');
+const Alarm = require('../../../bo/alarm.bo');
 const getToken = require('../../../helpers/getToken');
 const { matchSocketToToken } = require('../../../web-sockets/index');
 
@@ -31,7 +32,30 @@ function checkSocketID(request, response) {
   });
 }
 
+function reserveAmbulance(ambulanceId, citizenId) {
+  return new Promise((resolve, reject) => {
+    GenericDAO.updateFields(Ambulance, { _id: ambulanceId }, { available: false }, (err) => {
+      if (err) return reject(err);
+      const alarm = new Alarm({ ambulance_id: ambulanceId, citizen_id: citizenId });
+      return GenericDAO.save(alarm).then(resolve).catch(reject);
+    });
+  });
+}
+
+function linkSocketToAmbulancePosition(socket, ambulanceId) {
+  console.log(socket, ambulanceId);
+  /*
+  const eventName = `/ambulances/${ambulance_id}/position_update`;
+  socket.on(eventName), ;
+  */
+
+  // TODO
+}
+
 module.exports = {
   checkAmbulanceAvailabilty,
-  checkSocketID
+  checkSocketID,
+  reserveAmbulance,
+  linkSocketToAmbulancePosition,
+  AMBULANCE_NOT_FOUND
 };

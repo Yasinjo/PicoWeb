@@ -66,10 +66,15 @@ function findAvailableAmbulancesByHospital(hospitalId, callback) {
   return find(Ambulance, queryParams, callback);
 }
 
+function updateFields(businessSchema, selector, updates, callback) {
+  businessSchema.update(selector, { $set: updates }, callback);
+}
+
 // Export the module
 module.exports = {
   save,
   find,
   findOne,
+  updateFields,
   findAvailableAmbulancesByHospital
 };

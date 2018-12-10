@@ -6,7 +6,10 @@
 // Import the required modules
 const express = require('express');
 const passport = require('passport');
-const { checkAmbulanceAvailabilty, checkSocketID } = require('../helpers/index');
+const {
+  checkAmbulanceAvailabilty, checkSocketID, reserveAmbulance, linkSocketToAmbulancePosition,
+  AMBULANCE_NOT_FOUND
+} = require('../helpers/index');
 
 const { CITIZEN_AUTH_STRATEGY_NAME } = require('../../citizens/index');
 
@@ -33,16 +36,17 @@ const router = express.Router();
 
 router.get('/', passport.authenticate(CITIZEN_AUTH_STRATEGY_NAME, { session: false }),
   (request, response) => {
+    let socket = null;
     checkAmbulanceAvailabilty(request, response)
       .then(() => checkSocketID(request, response))
-      .then((socket) => {
-        reserveAmbulance(request, (err) => {
-          if (!err) { linkSocketToAmbulancePosition(socket, request.body.ambulance_id); }
-        });
-      });
-    // Check if the ambulance is available
-    // Validate if the socket ID has the same citizen id as the request
-    // Update the ambulance status
-    // Subscribe the citizen to the ambulance position
-    // Create an alarm object
+      .then((socketParam, citizenId) => {
+        socket = socketParam;
+        reserveAmbulance(request.body.ambulance_id, citizenId);
+      })
+      .then(() => linkSocketToAmbulancePosition(socket, request.body.ambulance_id))
+      .catch(() => response.status(400).send(AMBULANCE_NOT_FOUND));
   });
+
+module.exports = {
+  router
+};
