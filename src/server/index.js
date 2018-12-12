@@ -11,6 +11,7 @@ const http = require('http');
 const citizensRoutes = require('./routes/citizens/index');
 const hospitalsRoutes = require('./routes/hospitals/index');
 const alarmsRoutes = require('./routes/alarms/index');
+const driversRoutes = require('./routes/drivers/index');
 const webSockets = require('./web-sockets/index');
 const config = require('../../config/database');
 
@@ -34,6 +35,7 @@ mongoose.Promise = Promise;
 apiRouter.use('/citizens', citizensRoutes.router);
 apiRouter.use('/hospitals', hospitalsRoutes.router);
 apiRouter.use('/alarms', alarmsRoutes.router);
+apiRouter.use('/drivers', driversRoutes.router);
 
 // Add the logger to express app
 // Use plugins to parse the request body

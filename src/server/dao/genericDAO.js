@@ -20,7 +20,7 @@ function save(businessObject) {
       // If there is an error, send it with promise rejection
       if (err) { return reject(err); }
       // Otherwise, resolve the promise
-      return resolve();
+      return resolve(businessObject);
     });
   });
 }

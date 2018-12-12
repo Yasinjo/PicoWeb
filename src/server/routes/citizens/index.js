@@ -5,7 +5,6 @@
 
 // Import the required modules
 const express = require('express');
-const _ = require('lodash');
 const passport = require('passport');
 const jwt = require('jsonwebtoken');
 
@@ -13,7 +12,9 @@ const authConfig = require('../../../../config/auth.json');
 const verifyRequiredFields = require('../../helpers/verifyRequiredFields');
 const GenericDAO = require('../../dao/genericDAO');
 const Citizen = require('../../bo/citizen.bo');
+const { PhoneAccount, CITIZEN_PHONE_ACCOUNT_TYPE } = require('../../bo/phone_account.bo');
 const { uploadPictureHelper, uploadMiddleware } = require('../../helpers/uploadPictureHelper');
+const { savePhoneAccount } = require('../../helpers/phoneAccountHelpers');
 const addAuthStrategy = require('../../auth/addAuthStrategy');
 
 // Initialize constants
@@ -23,11 +24,27 @@ const DEACTIVATED_ACCOUNT = 'Your account has been disabled because of a false a
 const WRONG_PASSWORD = 'Authentication failed. Wrong password.';
 const CITIZEN_AUTH_STRATEGY_NAME = 'Citizen-auth-strategy';
 
+const CITIZENS_REPO_NAME = 'CITIZENS_REPO_NAME';
+
 // Create the router
 const router = express.Router();
 
 // Add the citizen authentication strategy to the passport module
 addAuthStrategy(passport, Citizen, CITIZEN_AUTH_STRATEGY_NAME);
+
+
+function verifyAccountActivation(resolve, reject, phoneAccount) {
+  // Find the citizen object
+  GenericDAO.findOne(Citizen, { phone_account_id: phoneAccount._id }, (err, citizen) => {
+    if (err || !citizen) {
+      return reject({ msg: CITIZEN_NOT_FOUND, status: 400 });
+    }
+    // If the account is active, then resolve the promise
+    if (citizen.isActive()) return resolve(citizen);
+    // Otherwise, reject it
+    return reject({ msg: DEACTIVATED_ACCOUNT, status: 403 });
+  });
+}
 
 /*
     * @function
@@ -42,24 +59,44 @@ function validateCitizenAuth(requestBody) {
     if (!requestBody.phone_number || !requestBody.password) { return reject({ status: 400 }); }
 
     // Search the citizen in the database
-    return GenericDAO.findOne(Citizen, { phone_number: requestBody.phone_number },
-      (err, citizen) => {
+    return GenericDAO.findOne(PhoneAccount, { phone_number: requestBody.phone_number },
+      (err, phoneAccount) => {
         // if there is an error or the citizen isn't found, then send a promise rejection
-        if (err || !citizen) return reject({ msg: CITIZEN_NOT_FOUND, status: 400 });
+        if (err || !phoneAccount || phoneAccount.type !== CITIZEN_PHONE_ACCOUNT_TYPE) {
+          return reject({ msg: CITIZEN_NOT_FOUND, status: 400 });
+        }
         // Otherwise, check the password
-        return citizen.comparePassword(requestBody.password, (errComp, isMatch) => {
+        return phoneAccount.comparePassword(requestBody.password, (errComp, isMatch) => {
           // If the password is correct, check the account activation
           if (!errComp && isMatch) {
-            // If the account is active, then resolve the promise
-            if (citizen.isActive()) return resolve(citizen);
-            // Otherwise, reject it
-            return reject({ msg: DEACTIVATED_ACCOUNT, status: 403 });
+            return verifyAccountActivation(resolve, reject, phoneAccount);
           }
           // Otherwise, send a promise rejection
           return reject({ msg: WRONG_PASSWORD, status: 400 });
         });
       });
   });
+}
+
+function saveUser(request, response) {
+  // Save a phone_account from request
+  savePhoneAccount(request.body, CITIZEN_PHONE_ACCOUNT_TYPE).then((phoneAccount) => {
+    // Create a citizen business object from the request body
+    const userData = { full_name: request.body.full_name, phone_account_id: phoneAccount._id };
+    const citizen = new Citizen(userData);
+    // Save the citizen to the database
+    GenericDAO.save(citizen)
+      .then(() => {
+        // Upload the image file (if there is an image), and send the response
+        if (request.file && request.file.buffer) {
+          uploadPictureHelper(request.file.buffer, citizen._id, CITIZENS_REPO_NAME,
+            () => response.status(201).json({ success: true }));
+        } else { response.status(201).json({ success: true }); }
+      })
+      .catch((err) => {
+        response.status(400).json({ success: false, error: err });
+      });
+  }).catch(() => response.status(405).json({ success: false, error: PHONE_DUPLICATION_ERROR }));
 }
 
 /*
@@ -78,31 +115,13 @@ function validateCitizenAuth(requestBody) {
       - 400 :
         { success : <boolean>, msg : <string> }
       - 201 :
-        { success : <boolean>, _id : <string> }
+        { success : <boolean> }
 */
 router.post('/signup', uploadMiddleware.single('image'), (request, response) => {
   // Initialize the required keys
   const requiredKeys = ['phone_number', 'password', 'full_name', 'latitude', 'longitude'];
-
   // Check if the request body contains all the required fields
-  verifyRequiredFields(request, response, requiredKeys).then(() => {
-    // Create a citizen business object from the request body
-    const citizen = new Citizen(_.pick(request.body, requiredKeys));
-
-    // Save the citizen to the database
-    GenericDAO.save(citizen)
-      .then(() => {
-        // Upload the image file (if there is an image), and send the response
-        if (request.file && request.file.buffer) {
-          uploadPictureHelper(request.file.buffer, request.body.phone_number, () => {
-            response.status(201).json({ success: true, _id: citizen._id });
-          });
-        } else { response.status(201).json({ success: true, _id: citizen._id }); }
-      })
-      .catch(() => {
-        response.status(400).json({ success: false, error: PHONE_DUPLICATION_ERROR });
-      });
-  });
+  verifyRequiredFields(request, response, requiredKeys).then(() => saveUser(request, response));
 });
 
 /*
