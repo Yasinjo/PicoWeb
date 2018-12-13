@@ -10,6 +10,19 @@ function savePhoneAccount(accountData, type) {
   return GenericDAO.save(account);
 }
 
+function findPhoneAccountFromUserId(BOSchema, id) {
+  return new Promise((resolve, reject) => {
+    GenericDAO.findOne(BOSchema, { _id: id }, (err, bo) => {
+      if (err || !bo) { reject(err); }
+      GenericDAO.findOne(PhoneAccount, { _id: bo.phone_account_id }, (err2, phoneAccount) => {
+        if (err2 || !phoneAccount) reject(err);
+        resolve(bo, phoneAccount);
+      });
+    });
+  });
+}
+
 module.exports = {
-  savePhoneAccount
+  savePhoneAccount,
+  findPhoneAccountFromUserId
 };

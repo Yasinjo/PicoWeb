@@ -34,17 +34,18 @@ const router = express.Router();
         { success : <boolean> }
 */
 
-router.get('/', passport.authenticate(CITIZEN_AUTH_STRATEGY_NAME, { session: false }),
+router.post('/', passport.authenticate(CITIZEN_AUTH_STRATEGY_NAME, { session: false }),
   (request, response) => {
     let socket = null;
     checkAmbulanceAvailabilty(request, response)
       .then(() => checkSocketID(request, response))
       .then((socketParam, citizenId) => {
         socket = socketParam;
-        reserveAmbulance(request.body.ambulance_id, citizenId);
+        return reserveAmbulance(request.body.ambulance_id, citizenId);
       })
       .then(() => linkSocketToAmbulancePosition(socket, request.body.ambulance_id))
-      .catch(() => response.status(400).send(AMBULANCE_NOT_FOUND));
+      .then(() => response.status(201).send({ success: true }))
+      .catch(err => response.status(400).send({ success: false, msg: AMBULANCE_NOT_FOUND, err }));
   });
 
 module.exports = {

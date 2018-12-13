@@ -1,12 +1,23 @@
 const GenericDAO = require('../../../dao/genericDAO');
 const Ambulance = require('../../../bo/ambulance.bo');
 const Alarm = require('../../../bo/alarm.bo');
+const Driver = require('../../../bo/driver.bo');
+const Citizen = require('../../../bo/citizen.bo');
 const getToken = require('../../../helpers/getToken');
-const { matchSocketToToken } = require('../../../web-sockets/index');
+const { matchSocketToToken, NEW_ALARM_EVENT } = require('../../../web-sockets/index');
+const { findPhoneAccountFromUserId } = require('../../../helpers/phoneAccountHelpers');
 
 const AMBULANCE_NOT_FOUND = 'Ambulance not found';
-const SOCKET_ERROR = 'wrong socket ID';
+const SOCKET_ERROR = 'Wrong socket ID';
 
+const positionRoomNameFromDriver = driverId => `/drivers/${driverId}/position_update`;
+
+const ambulancePositionRoomName = ambulanceId => new Promise((resolve, reject) => {
+  GenericDAO.findOne(Driver, { ambulance_id: ambulanceId }, (err, driver) => {
+    if (err || !driver) return reject(err);
+    return resolve(positionRoomNameFromDriver(driver._id));
+  });
+});
 
 function checkAmbulanceAvailabilty(request, response) {
   return new Promise((resolve) => {
@@ -42,14 +53,29 @@ function reserveAmbulance(ambulanceId, citizenId) {
   });
 }
 
-function linkSocketToAmbulancePosition(socket, ambulanceId) {
-  console.log(socket, ambulanceId);
-  /*
-  const eventName = `/ambulances/${ambulance_id}/position_update`;
-  socket.on(eventName), ;
-  */
+function notifyDriver(socket, roomName, citizenId) {
+  return findPhoneAccountFromUserId(Citizen, citizenId)
+    .then((citizen, phoneAccount) => {
+      const msg = {
+        citizen_id: citizenId,
+        full_name: citizen.full_name,
+        longitude: phoneAccount.longitude,
+        latitude: phoneAccount.latitude
+      };
 
-  // TODO
+      socket.to(roomName)
+        .emit(NEW_ALARM_EVENT, msg);
+    });
+}
+
+function linkSocketToAmbulancePosition(socket, ambulanceId) {
+  return new Promise((resolve, reject) => {
+    ambulancePositionRoomName(ambulanceId)
+      .then((roomName) => {
+        socket.join(roomName);
+        return notifyDriver();
+      }).catch(reject);
+  });
 }
 
 module.exports = {
@@ -57,5 +83,6 @@ module.exports = {
   checkSocketID,
   reserveAmbulance,
   linkSocketToAmbulancePosition,
+  positionRoomNameFromDriver,
   AMBULANCE_NOT_FOUND
 };
