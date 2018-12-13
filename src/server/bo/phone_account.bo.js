@@ -5,6 +5,7 @@
 
 // Import the required modules
 const mongoose = require('mongoose');
+const uniqueValidator = require('mongoose-unique-validator');
 const { preSaveAccount, comparePassword } = require('../helpers/schemasHelper');
 
 const { Schema } = mongoose;
@@ -15,8 +16,8 @@ const DRIVER_PHONE_ACCOUNT_TYPE = 'DRIVER_PHONE_ACCOUNT_TYPE';
 const PhoneAccountSchema = new Schema({
   phone_number: {
     type: Schema.Types.String,
-    required: true,
-    unique: true
+    unique: true,
+    required: true
   },
   password: {
     type: Schema.Types.String,
@@ -40,6 +41,7 @@ const PhoneAccountSchema = new Schema({
 // Add the Schema methods
 PhoneAccountSchema.pre('save', preSaveAccount);
 PhoneAccountSchema.methods.comparePassword = comparePassword;
+PhoneAccountSchema.plugin(uniqueValidator);
 
 const PhoneAccountModel = mongoose.model('Phone_account', PhoneAccountSchema);
 // Create indexes for the mongoose model

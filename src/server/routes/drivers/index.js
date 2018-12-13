@@ -5,12 +5,13 @@
 
 // Import the required modules
 const express = require('express');
-const _ = require('lodash');
 const Driver = require('../../bo/driver.bo');
 const Ambulance = require('../../bo/ambulance.bo');
+const { DRIVER_PHONE_ACCOUNT_TYPE } = require('../../bo/phone_account.bo');
 const GenericDAO = require('../../dao/genericDAO');
 const verifyRequiredFields = require('../../helpers/verifyRequiredFields');
-const { uploadPictureHelper, uploadMiddleware } = require('../../helpers/uploadPictureHelper');
+const { uploadMiddleware } = require('../../helpers/uploadPictureHelper');
+const { signupUser, signinUser } = require('../../helpers/genericRoutesHelper');
 const { AMBULANCE_NOT_FOUND } = require('../alarms/helpers/index');
 
 const DRIVERS_REPO_NAME = 'DRIVERS_REPO_NAME';
@@ -25,6 +26,10 @@ const router = express.Router();
     * @Request body :
       {
           full_name : <string>{required},
+          latitude : <number>{required},
+          longitude : <number>{required},
+          phone_number : <string>{required},
+          password : <string>{required},
           image : <image_file>{optional}, ==> see https://www.learn2crack.com/2014/08/android-upload-image-node-js-server.html
       }
     * @Response body :
@@ -35,26 +40,29 @@ const router = express.Router();
 */
 router.post('/signup', uploadMiddleware.single('image'), (request, response) => {
   // Initialize the required keys
-  const requiredKeys = ['full_name'];
+  const requiredKeys = ['phone_number', 'password', 'full_name', 'latitude', 'longitude'];
+  // Call the generic function signupUser
+  signupUser(request, response, requiredKeys, ['full_name'], DRIVER_PHONE_ACCOUNT_TYPE, Driver, DRIVERS_REPO_NAME);
+});
 
-  // Check if the request body contains all the required fields
-  verifyRequiredFields(request, response, requiredKeys).then(() => {
-    // Create a driver business object from the request body
-    const driver = new Driver(_.pick(request.body, requiredKeys));
 
-    // Save the driver to the database
-    return GenericDAO.save(driver)
-      .then(() => {
-        // Upload the image file (if there is an image), and send the response
-        if (request.file && request.file.buffer) {
-          uploadPictureHelper(request.file.buffer, driver._id, DRIVERS_REPO_NAME,
-            () => response.status(201).json({ success: true }));
-        } else { response.status(201).json({ success: true }); }
-      })
-      .catch((error) => {
-        response.status(400).json({ success: false, error });
-      });
-  });
+/*
+    * @route : POST /api/drivers/signin
+    * @description : make a citizen authentication
+    * @Request body :
+      {
+          phone_number : <string>{required},
+          password : <string>{required},
+      }
+    * @Response body :
+      - 400, 403 :
+        { success : <boolean>, msg : <string> }
+      - 200 :
+        { success : <boolean>, token : <string> }
+*/
+router.post('/signin', (request, response) => {
+  // Call the generic function signinUser
+  signinUser(Driver, request, response, DRIVER_PHONE_ACCOUNT_TYPE);
 });
 
 /*
@@ -83,7 +91,7 @@ router.patch('/:driver_id/ambulance', uploadMiddleware.single('image'), (request
         return response.status(400).json({ success: false, msg: DRIVER_NOT_FOUND });
       }
       // Check the existence of the ambulance
-      GenericDAO.findOne(Ambulance, { _id: request.body.ambulance_id }, (err, ambulance) => {
+      return GenericDAO.findOne(Ambulance, { _id: request.body.ambulance_id }, (err, ambulance) => {
         if (err || !ambulance) {
           return response.status(400).json({ success: false, msg: AMBULANCE_NOT_FOUND });
         }
@@ -97,34 +105,6 @@ router.patch('/:driver_id/ambulance', uploadMiddleware.single('image'), (request
       });
     });
   });
-});
-
-/*
-    * @route : POST /api/drivers/signin
-    * @description : make a citizen authentication
-    * @Request body :
-      {
-          phone_number : <string>{required},
-          password : <string>{required},
-      }
-    * @Response body :
-      - 400, 403 :
-        { success : <boolean>, msg : <string> }
-      - 200 :
-        { success : <boolean>, token : <string> }
-*/
-router.post('/signin', (req, res) => {
-  // Validate the citizen authentication
-  validateCitizenAuth(req.body)
-    .then((citizen) => {
-      // If everything is correct, create a token
-      const token = jwt.sign({ _id: citizen._id }, authConfig.secret);
-      // Send the token in the response
-      res.status(200).send({ success: true, token: `JWT ${token}` });
-    }).catch(({ msg, status }) => {
-      // If there is an error, send it in the response
-      res.status(status).send({ success: false, msg });
-    });
 });
 
 module.exports = {

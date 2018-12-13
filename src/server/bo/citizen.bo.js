@@ -20,7 +20,8 @@ const CitizenSchema = new Schema({
   },
   phone_account_id: {
     type: Schema.Types.ObjectId,
-    ref: 'Phone_account'
+    ref: 'Phone_account',
+    required: true
   }
 });
 
