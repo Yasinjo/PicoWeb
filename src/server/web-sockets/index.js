@@ -17,6 +17,8 @@ const DRIVER_SOCKET_TYPE = 'DRIVER_SOCKET_TYPE';
 const CITIZEN_NAMESPACE = 'CITIZEN_NAMESPACE';
 const DRIVER_NAMESPACE = 'DRIVER_NAMESPACE';
 
+const SOCKET_DATA_PROBLEM = 'SOCKET_DATA_PROBLEM';
+
 const AMBULANCE_POSITION_CHANGE_EVENT = 'AMBULANCE_POSITION_CHANGE_EVENT';
 const CITIZEN_POSITION_CHANGE_EVENT = 'CITIZEN_POSITION_CHANGE_EVENT';
 
@@ -41,7 +43,10 @@ function socketAuth(socket, AuthenticationEventName,
           socket.emit(SuccessfullAuthEventName, { success: true, socket_id: socket.id });
         });
         // Android communication
-      }).catch();
+      }).catch((err) => {
+        console.log('Error');
+        console.log(err);
+      });
   });
 }
 
@@ -80,23 +85,21 @@ function initSocket(socket, AuthenticationEventName,
 
 function init(server) {
   io = socketIO(server);
-  const citizenNsp = io.of(CITIZEN_NAMESPACE);
-  const driverNsp = io.of(DRIVER_NAMESPACE);
-  citizenNsp.on('connection', socket => initSocket(socket, CITIZEN_AUNTENTICATION_EVENT, Citizen,
-    CITIZEN_AUTH_SUCCESS_EVENT, CITIZEN_SOCKET_TYPE));
-
-  driverNsp.on('connection', socket => initSocket(socket, DRIVER_AUNTENTICATION_EVENT, Driver,
-    DRIVER_AUTH_SUCCESS_EVENT, DRIVER_SOCKET_TYPE));
+  io.on('connection', (socket) => {
+    initSocket(socket, CITIZEN_AUNTENTICATION_EVENT, Citizen,
+      CITIZEN_AUTH_SUCCESS_EVENT, CITIZEN_SOCKET_TYPE);
+    initSocket(socket, DRIVER_AUNTENTICATION_EVENT, Driver,
+      DRIVER_AUTH_SUCCESS_EVENT, DRIVER_SOCKET_TYPE);
+  });
 }
 
 function matchSocketToToken(socketId, token) {
-  return Promise((resolve, reject) => {
-    const socket = this.io.sockets.connected[socketId];
+  return new Promise((resolve, reject) => {
+    const socket = io.sockets.connected[socketId];
     if (!socket) return reject();
 
     return extractUserIdFromToken(token)
-      .then(userId => ((socket.userId === userId) ? resolve(socket, userId) : reject()))
-      .catch(() => reject);
+      .then(userId => ((socket.userId === userId) ? resolve({ socket, userId }) : reject(SOCKET_DATA_PROBLEM)));
   });
 }
 

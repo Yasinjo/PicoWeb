@@ -8,6 +8,8 @@ const { matchSocketToToken, NEW_ALARM_EVENT } = require('../../../web-sockets/in
 const { findPhoneAccountFromUserId } = require('../../../helpers/phoneAccountHelpers');
 
 const AMBULANCE_NOT_FOUND = 'Ambulance not found';
+const AMBULANCE_NOT_AVAILABLE = 'Ambulance not available anymore';
+
 const SOCKET_ERROR = 'Wrong socket ID';
 
 const positionRoomNameFromDriver = driverId => `/drivers/${driverId}/position_update`;
@@ -21,66 +23,79 @@ const ambulancePositionRoomName = ambulanceId => new Promise((resolve, reject) =
 
 function checkAmbulanceAvailabilty(request, response) {
   return new Promise((resolve) => {
-    GenericDAO.findOne(Ambulance, { id: request.body.ambulance_id },
+    GenericDAO.findOne(Ambulance, { _id: request.body.ambulance_id },
       (err, ambulance) => {
-        if (err || !ambulance || !(ambulance.available)) {
+        if (err || !ambulance) {
           return response.status(400).send({ success: false, msg: AMBULANCE_NOT_FOUND });
+        }
+        if (!(ambulance.available)) {
+          return response.status(400).send({ success: false, msg: AMBULANCE_NOT_AVAILABLE });
         }
 
         return resolve();
       });
   });
 }
-
+/*
 function checkSocketID(request, response) {
-  return new Promise(() => {
+  return new Promise((resolve) => {
     const socketId = request.body.socket_id;
     const token = getToken(request.headers);
 
-    return matchSocketToToken(socketId, token)
-      // .then(socket => resolve(socket))
-      .catch(() => response.status(401).send({ success: false, msg: SOCKET_ERROR }));
+    matchSocketToToken(socketId, token)
+      .then(({ socket, userId }) => {
+        resolve({ socket, userId });
+      })
+      .catch((err) => {
+        console.log('Error : ');
+        console.log(err);
+        response.status(401).send({ success: false, msg: SOCKET_ERROR });
+      });
   });
 }
+*/
 
 function reserveAmbulance(ambulanceId, citizenId) {
   return new Promise((resolve, reject) => {
     GenericDAO.updateFields(Ambulance, { _id: ambulanceId }, { available: false }, (err) => {
       if (err) return reject(err);
       const alarm = new Alarm({ ambulance_id: ambulanceId, citizen_id: citizenId });
-      return GenericDAO.save(alarm).then(resolve).catch(reject);
+      return GenericDAO.save(alarm).then(() => resolve(citizenId)).catch((err) => reject(err));
     });
   });
 }
 
 function notifyDriver(socket, roomName, citizenId) {
-  return findPhoneAccountFromUserId(Citizen, citizenId)
-    .then((citizen, phoneAccount) => {
+  findPhoneAccountFromUserId(Citizen, citizenId)
+    .then(({ businessObject, phoneAccount }) => {
       const msg = {
         citizen_id: citizenId,
-        full_name: citizen.full_name,
+        full_name: businessObject.full_name,
         longitude: phoneAccount.longitude,
         latitude: phoneAccount.latitude
       };
 
       socket.to(roomName)
         .emit(NEW_ALARM_EVENT, msg);
+    }).catch((err) => {
+      console.log('notifyDriver error : ');
+      console.log(err);
     });
 }
 
-function linkSocketToAmbulancePosition(socket, ambulanceId) {
+function linkSocketToAmbulancePosition(socket, ambulanceId, citizenId) {
   return new Promise((resolve, reject) => {
     ambulancePositionRoomName(ambulanceId)
       .then((roomName) => {
         socket.join(roomName);
-        return notifyDriver();
+        notifyDriver(socket, roomName, citizenId);
+        resolve();
       }).catch(reject);
   });
 }
 
 module.exports = {
   checkAmbulanceAvailabilty,
-  checkSocketID,
   reserveAmbulance,
   linkSocketToAmbulancePosition,
   positionRoomNameFromDriver,

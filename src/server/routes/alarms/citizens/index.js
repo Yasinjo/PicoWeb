@@ -21,31 +21,42 @@ const router = express.Router();
     * @description : declare an alarm
     * @Request body :
       {
-          ambulance_id : <string>{required},
-          socket_id : <string>{required}
+          ambulance_id : <string>{required}
       }
 
     * @Response body :
       - 400 : [ambulance not found, ambulance is no longer available]
         { success : <boolean>, msg : <string> }
-      - 401 : [wrong token, wrong socket ID]
-        { success : <boolean>, msg : <string> }
       - 201 :
-        { success : <boolean> }
+        { 
+          success : <boolean>,
+          driver_full_name : <string>,
+          ambulance_matricule : <string>,
+          ambulance_longitude : <number>,
+          ambulance_latitude : <number>
+        }
 */
 
 router.post('/', passport.authenticate(CITIZEN_AUTH_STRATEGY_NAME, { session: false }),
   (request, response) => {
-    let socket = null;
+    let socketVar = null;
     checkAmbulanceAvailabilty(request, response)
-      .then(() => checkSocketID(request, response))
-      .then((socketParam, citizenId) => {
-        socket = socketParam;
-        return reserveAmbulance(request.body.ambulance_id, citizenId);
+      .then(() => {
+        console.log('1');
+        return checkSocketID(request, response);
       })
-      .then(() => linkSocketToAmbulancePosition(socket, request.body.ambulance_id))
+      .then(({ socket, userId }) => {
+        socketVar = socket;
+        return reserveAmbulance(request.body.ambulance_id, userId);
+      })
+      .then((citizenId) => {
+        console.log('3');
+        return linkSocketToAmbulancePosition(socketVar, request.body.ambulance_id, citizenId);
+      })
       .then(() => response.status(201).send({ success: true }))
-      .catch(err => response.status(400).send({ success: false, msg: AMBULANCE_NOT_FOUND, err }));
+      .catch((err) => {
+        response.status(400).send({ success: false, msg: AMBULANCE_NOT_FOUND });
+      });
   });
 
 module.exports = {
