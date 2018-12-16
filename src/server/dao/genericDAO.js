@@ -6,6 +6,7 @@
 
 // Import the required modules
 const Ambulance = require('../bo/ambulance.bo');
+const Driver = require('../bo/driver.bo');
 
 /*
     * @function
@@ -70,11 +71,19 @@ function updateFields(businessSchema, selector, updates, callback) {
   businessSchema.update(selector, { $set: updates }, callback);
 }
 
+const findAmbulanceDriver = ambulanceId => new Promise((resolve, reject) => {
+  findOne(Driver, { ambulance_id: ambulanceId }, (err, driver) => {
+    if (err || !driver) return reject(err);
+    return resolve(driver);
+  });
+});
+
 // Export the module
 module.exports = {
   save,
   find,
   findOne,
   updateFields,
-  findAvailableAmbulancesByHospital
+  findAvailableAmbulancesByHospital,
+  findAmbulanceDriver
 };

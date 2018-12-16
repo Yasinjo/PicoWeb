@@ -31,6 +31,9 @@ const PhoneAccountSchema = new Schema({
     type: Schema.Types.Number,
     required: true
   },
+  socketId: {
+    type: Schema.Types.String
+  },
   type: {
     type: Schema.Types.String,
     enum: [CITIZEN_PHONE_ACCOUNT_TYPE, DRIVER_PHONE_ACCOUNT_TYPE],

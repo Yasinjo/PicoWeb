@@ -7,10 +7,11 @@
 const express = require('express');
 const passport = require('passport');
 const {
-  checkAmbulanceAvailabilty, checkSocketID, reserveAmbulance, linkSocketToAmbulancePosition,
-  AMBULANCE_NOT_FOUND
+  checkAmbulanceAvailabilty, reserveAmbulance, linkCitizenToAmbulance,
+  prepareAlarmDataResponse, AMBULANCE_NOT_FOUND
 } = require('../helpers/index');
-
+const getToken = require('../../../helpers/getToken');
+const { extractUserIdFromToken } = require('../../../auth/tokenExtractors');
 const { CITIZEN_AUTH_STRATEGY_NAME } = require('../../citizens/index');
 
 // Create the router
@@ -28,10 +29,11 @@ const router = express.Router();
       - 400 : [ambulance not found, ambulance is no longer available]
         { success : <boolean>, msg : <string> }
       - 201 :
-        { 
+        {
           success : <boolean>,
+          driver_id : <string>,
           driver_full_name : <string>,
-          ambulance_matricule : <string>,
+          ambulance_registration_number : <string>,
           ambulance_longitude : <number>,
           ambulance_latitude : <number>
         }
@@ -39,22 +41,34 @@ const router = express.Router();
 
 router.post('/', passport.authenticate(CITIZEN_AUTH_STRATEGY_NAME, { session: false }),
   (request, response) => {
-    let socketVar = null;
+    let citizenId = null;
+    let ambulance = null;
     checkAmbulanceAvailabilty(request, response)
-      .then(() => {
+      .then((ambulanceParam) => {
         console.log('1');
-        return checkSocketID(request, response);
+        ambulance = ambulanceParam;
+        const token = getToken(request.headers);
+        return extractUserIdFromToken(token);
       })
-      .then(({ socket, userId }) => {
-        socketVar = socket;
+      .then((userId) => {
+        console.log('2');
+        citizenId = userId;
         return reserveAmbulance(request.body.ambulance_id, userId);
       })
-      .then((citizenId) => {
+      .then(() => {
         console.log('3');
-        return linkSocketToAmbulancePosition(socketVar, request.body.ambulance_id, citizenId);
+        return linkCitizenToAmbulance(request.body.ambulance_id, citizenId);
       })
-      .then(() => response.status(201).send({ success: true }))
+      .then(() => {
+        console.log('4');
+        return prepareAlarmDataResponse(citizenId, ambulance);
+      })
+      .then((responseParam) => {
+        response.status(201).send({ success: true, ...responseParam });
+      })
       .catch((err) => {
+        console.log('Router error :');
+        console.log(err);
         response.status(400).send({ success: false, msg: AMBULANCE_NOT_FOUND });
       });
   });
