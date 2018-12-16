@@ -31,13 +31,13 @@ const positionChangeRoomName = (socketType, userId) => {
 };
 
 function updateSocket(user, socket) {
-  GenericDAO.updateFields(PhoneAccount, { _id: user.phone_account_id }, { socketId: socket.id },
-    (err) => {
-      if (err) {
-        console.log('updateSocket error :');
-        console.log(err);
-      }
-    });
+  return new Promise((resolve, reject) => {
+    GenericDAO.updateFields(PhoneAccount, { _id: user.phone_account_id }, { socketId: socket.id },
+      (err) => {
+        if (err) return reject(err);
+        return resolve();
+      });
+  });
 }
 
 
@@ -52,8 +52,12 @@ function socketAuth(socket, AuthenticationEventName,
           socket.auth = true;
           socket.userId = userId;
           socket.socketType = socketType;
-          updateSocket(user, socket);
-          socket.emit(SuccessfullAuthEventName, { success: true });
+          updateSocket(user, socket)
+            .then(() => socket.emit(SuccessfullAuthEventName, { success: true }))
+            .catch((error) => {
+              console.log('updateSocket error :');
+              console.log(error);
+            });
         });
         // Android communication
       }).catch((err) => {
@@ -139,7 +143,10 @@ function getSocketByBOId(BusinessSchema, userId) {
 function joinRoom(BusinessSchema, userId, roomName) {
   return new Promise((resolve, reject) => {
     getSocketByBOId(BusinessSchema, userId)
-      .then(socket => socket.join(roomName))
+      .then((socket) => {
+        socket.join(roomName);
+        resolve();
+      })
       .catch(err => reject(err));
   });
 }
@@ -147,7 +154,10 @@ function joinRoom(BusinessSchema, userId, roomName) {
 function sendMessageToBO(BusinessSchema, userId, eventName, message) {
   return new Promise((resolve, reject) => {
     getSocketByBOId(BusinessSchema, userId)
-      .then(socket => socket.emit(eventName, message))
+      .then((socket) => {
+        socket.emit(eventName, message);
+        resolve();
+      })
       .catch(err => reject(err));
   });
 }

@@ -1,7 +1,6 @@
 const API_HOST = 'http://localhost:9090';
 const logElt = document.getElementById('log');
 let socket;
-let socketServerSideId;
 
 const token = 'JWT eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJfaWQiOiI1YzEyM2Y1MGE0MjNiMDI0ZTg5ZGJjMDciLCJpYXQiOjE1NDQ4MTYxMzJ9.znGzy44xdHaMfwkbMfE4vSY5lCzgAb_o-_RMEsq1bWQ';
 const ambulanceId = '5bf54f597f47c57269b73f1e';
@@ -14,8 +13,7 @@ const ambulanceId = '5bf54f597f47c57269b73f1e';
 // Send alarm to an available ambulance (static)
 function sendAlarm() {
   const data = JSON.stringify({
-    ambulance_id: ambulanceId,
-    socket_id: socketServerSideId
+    ambulance_id: ambulanceId
   });
 
   console.log(data);
@@ -32,15 +30,15 @@ function sendAlarm() {
     })
     .then(response => response.json())
     .then((myJson) => {
+      console.log('API response');
       console.log(myJson);
     });
 }
 
 function socketAuthentication() {
   socket = io(API_HOST);
-  socket.on('CITIZEN_AUTH_SUCCESS_EVENT', (data) => {
+  socket.on('CITIZEN_AUTH_SUCCESS_EVENT', () => {
     logElt.innerHTML = 'Socket authenticated';
-    socketServerSideId = data.socket_id;
     sendAlarm();
   });
 
@@ -51,19 +49,19 @@ function socketAuthentication() {
 }
 
 
-function login() {
-  fetch(`${API_HOST}/api/citizens/signin`,
-    {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json'
-      },
-      body: data
-    })
-    .then(response => response.json())
-    .then((myJson) => {
-      console.log(myJson);
-    });
-}
+// function login() {
+//   fetch(`${API_HOST}/api/citizens/signin`,
+//     {
+//       method: 'POST',
+//       headers: {
+//         'Content-Type': 'application/json'
+//       },
+//       body: data
+//     })
+//     .then(response => response.json())
+//     .then((myJson) => {
+//       console.log(myJson);
+//     });
+// }
 
 socketAuthentication();
