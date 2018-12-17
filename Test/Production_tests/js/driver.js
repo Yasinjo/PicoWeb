@@ -2,6 +2,13 @@ const API_HOST = 'http://localhost:9090';
 const logElt = document.getElementById('log');
 const longitudeElt = document.getElementById('longitude');
 const latitudeElt = document.getElementById('latitude');
+const newAlarmDiv = document.getElementById('new_alarm_div');
+
+const citizenId = document.getElementById('citizen_id');
+const citizenName = document.getElementById('citizen_name');
+const citizenLongitude = document.getElementById('citizen_logitude');
+const citizenLatitude = document.getElementById('citizen_latitude');
+
 let socket;
 
 const token = 'JWT eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJfaWQiOiI1YzEyM2QzZmU0ZDkyNTA5ODgyYzI4NWIiLCJpYXQiOjE1NDQ5OTIwMDl9.Wybm5LiS28l9PzSrvxwNv7uTJbTkO6u98UlGw1sAYX0';
@@ -13,13 +20,19 @@ function socketAuthentication() {
   });
 
   socket.on('NEW_ALARM_EVENT', (data) => {
-    console.log('NEW_ALARM_EVENT');
-    console.log(data);
+    logElt.innerHTML = 'New alarm';
+    newAlarmDiv.className = 'visible';
+
+    citizenId.innerHTML = data.citizen_id;
+    citizenName.innerHTML = data.full_name;
+    citizenLongitude.innerHTML = data.longitude;
+    citizenLatitude.innerHTML = data.latitude;
   });
 
   socket.on('CITIZEN_POSITION_CHANGE_EVENT', (data) => {
     console.log('Citizen position change :');
-    console.log(data);
+    citizenLongitude.innerHTML = data.longitude;
+    citizenLatitude.innerHTML = data.latitude;
   });
 
   socket.on('connect', () => {
@@ -29,14 +42,19 @@ function socketAuthentication() {
 }
 
 function changePosition() {
-  const message = {
-    longitude: longitudeElt.value,
-    latitude: latitudeElt.value,
-  };
+  setInterval(() => {
+    const message = {
+      longitude: Math.random() * 100000,
+      latitude: Math.random() * 100000,
+    };
 
-  logElt.innerHTML = 'Sending position change';
-  socket.emit('POSITION_CHANGE_EVENT', message);
-  logElt.innerHTML = 'Position changed';
+    longitudeElt.value = message.longitude;
+    latitudeElt.value = message.latitude;
+
+    logElt.innerHTML = 'Sending position change';
+    socket.emit('POSITION_CHANGE_EVENT', message);
+    logElt.innerHTML = 'Position changed';
+  }, 1000);
 }
 
 
@@ -56,3 +74,4 @@ function changePosition() {
 // }
 
 socketAuthentication();
+changePosition();

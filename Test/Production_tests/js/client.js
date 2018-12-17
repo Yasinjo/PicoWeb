@@ -2,6 +2,15 @@ const API_HOST = 'http://localhost:9090';
 const logElt = document.getElementById('log');
 const longitudeElt = document.getElementById('longitude');
 const latitudeElt = document.getElementById('latitude');
+const driverInfosDiv = document.getElementById('driver_infos_location');
+
+const driverInfoKeys = ['driver_id', 'driver_full_name', 'ambulance_registration_number', 'ambulance_longitude', 'ambulance_latitude'];
+const driverInfo = {};
+
+for (const key of driverInfoKeys) {
+  driverInfo[key] = document.getElementById(key);
+}
+
 let socket;
 
 const token = 'JWT eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJfaWQiOiI1YzEyM2Y1MGE0MjNiMDI0ZTg5ZGJjMDciLCJpYXQiOjE1NDQ4MTYxMzJ9.znGzy44xdHaMfwkbMfE4vSY5lCzgAb_o-_RMEsq1bWQ';
@@ -18,8 +27,6 @@ function sendAlarm() {
     ambulance_id: ambulanceId
   });
 
-  console.log(data);
-
   logElt.innerHTML = 'Sending alarm';
   fetch(`${API_HOST}/api/alarms/citizens`,
     {
@@ -31,9 +38,13 @@ function sendAlarm() {
       body: data
     })
     .then(response => response.json())
-    .then((myJson) => {
-      console.log('API response');
-      console.log(myJson);
+    .then((responseJSON) => {
+      if (!responseJSON.success) { logElt.innerHTML = responseJSON.msg; return; }
+
+      driverInfosDiv.className = 'visible';
+      for (const key in driverInfo) {
+        driverInfo[key].innerHTML = responseJSON[key];
+      }
     });
 }
 
@@ -45,8 +56,10 @@ function socketAuthentication() {
   });
 
   socket.on('AMBULANCE_POSITION_CHANGE_EVENT', (data) => {
-    console.log('Ambulance position change :');
+    console.log('AMBULANCE_POSITION_CHANGE_EVENT');
     console.log(data);
+    driverInfo.ambulance_latitude.innerHTML = data.latitude;
+    driverInfo.ambulance_longitude.innerHTML = data.longitude;
   });
 
   socket.on('connect', () => {
@@ -56,14 +69,19 @@ function socketAuthentication() {
 }
 
 function changePosition() {
-  const message = {
-    longitude: longitudeElt.value,
-    latitude: latitudeElt.value,
-  };
+  setInterval(() => {
+    const message = {
+      longitude: Math.random() * 100000,
+      latitude: Math.random() * 100000
+    };
 
-  logElt.innerHTML = 'Sending position change';
-  socket.emit('POSITION_CHANGE_EVENT', message);
-  logElt.innerHTML = 'Position changed';
+    longitudeElt.value = message.longitude;
+    latitudeElt.value = message.latitude;
+
+    logElt.innerHTML = 'Sending position change';
+    socket.emit('POSITION_CHANGE_EVENT', message);
+    logElt.innerHTML = 'Position changed';
+  }, 1000);
 }
 
 
@@ -83,3 +101,4 @@ function changePosition() {
 // }
 
 socketAuthentication();
+changePosition();

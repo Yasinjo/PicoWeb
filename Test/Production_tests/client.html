@@ -22,22 +22,34 @@
         </table>
       </div>
     -->
-
-    <br />
-    <br />
-
     <div id="menu">
       <b>Status : </b> <label id="log">Initial status</label>
 
       <div id="driver_infos_location" class="hidden">
         <table>
           <tr>
-            <td><img src="image.jpeg" /></td>
+            <td><b>Driver id :</b></td>
+            <td id="driver_id"></td>
+          </tr>
 
-            <td>
-              Driver name <br />
-              Longitude : 19.44 Latitude : 197.36
-            </td>
+          <tr>
+            <td><b>Driver full name :</b></td>
+            <td id="driver_full_name"></td>
+          </tr>
+
+          <tr>
+            <td><b>Ambulance registration number :</b></td>
+            <td id="ambulance_registration_number"></td>
+          </tr>
+
+          <tr>
+            <td><b>Ambulance longitude :</b></td>
+            <td id="ambulance_longitude"></td>
+          </tr>
+
+          <tr>
+            <td><b>Ambulance latitude :</b></td>
+            <td id="ambulance_latitude"></td>
           </tr>
         </table>
       </div>
@@ -47,9 +59,10 @@
 
       <div id="my_position">
         <b>My position</b> <br />
-        Longitude <input id="longitude" type="number" step="0.01" /> &nbsp;
-        &nbsp; Latitude <input id="latitude" type="number" step="0.01" /> &nbsp;
-        &nbsp; <button onclick="changePosition();">Change</button>
+        Longitude
+        <input id="longitude" type="number" step="0.01" disabled /> &nbsp;
+        &nbsp; Latitude
+        <input id="latitude" type="number" step="0.01" disabled />
       </div>
     </div>
   </body>
