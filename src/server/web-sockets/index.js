@@ -84,11 +84,18 @@ function socketPositionChange(socket, BOSchema) {
       .emit(eventName, msg);
 
     // Update position in the database
-    GenericDAO.findOne(BOSchema, { id: socket.userId }, (err, businessObject) => {
-      if (err || !businessObject) return;
+    GenericDAO.findOne(BOSchema, { _id: socket.userId }, (err, businessObject) => {
+      if (err || !businessObject) {
+        return;
+      }
 
-      GenericDAO.updateFields(BOSchema, { _id: businessObject.phone_account_id },
-        { latitude: data.latitude, longitude: data.longitude });
+      GenericDAO.updateFields(PhoneAccount, { _id: businessObject.phone_account_id },
+        { latitude: data.latitude, longitude: data.longitude }, (error) => {
+          if (error) {
+            console.log('socketPositionChange error :');
+            console.log(error);
+          }
+        });
     });
   });
 }
@@ -97,7 +104,6 @@ function initSocket(socket, AuthenticationEventName,
   BOSchema, SuccessfullAuthEventName, socketType) {
   socketAuth(socket, AuthenticationEventName,
     BOSchema, SuccessfullAuthEventName, socketType);
-
 
   socketPositionChange(socket, BOSchema);
 }

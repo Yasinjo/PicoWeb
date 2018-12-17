@@ -1,5 +1,7 @@
 const API_HOST = 'http://localhost:9090';
 const logElt = document.getElementById('log');
+const longitudeElt = document.getElementById('longitude');
+const latitudeElt = document.getElementById('latitude');
 let socket;
 
 const token = 'JWT eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJfaWQiOiI1YzEyM2Y1MGE0MjNiMDI0ZTg5ZGJjMDciLCJpYXQiOjE1NDQ4MTYxMzJ9.znGzy44xdHaMfwkbMfE4vSY5lCzgAb_o-_RMEsq1bWQ';
@@ -42,10 +44,26 @@ function socketAuthentication() {
     sendAlarm();
   });
 
+  socket.on('AMBULANCE_POSITION_CHANGE_EVENT', (data) => {
+    console.log('Ambulance position change :');
+    console.log(data);
+  });
+
   socket.on('connect', () => {
     logElt.innerHTML = 'Socket connected';
     socket.emit('CITIZEN_AUNTENTICATION_EVENT', { token });
   });
+}
+
+function changePosition() {
+  const message = {
+    longitude: longitudeElt.value,
+    latitude: latitudeElt.value,
+  };
+
+  logElt.innerHTML = 'Sending position change';
+  socket.emit('POSITION_CHANGE_EVENT', message);
+  logElt.innerHTML = 'Position changed';
 }
 
 

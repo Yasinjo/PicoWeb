@@ -5,7 +5,8 @@ const Driver = require('../../../bo/driver.bo');
 const Citizen = require('../../../bo/citizen.bo');
 const { findPhoneAccountFromUserId } = require('../../../helpers/phoneAccountHelpers');
 const {
-  joinRoom, sendMessageToBO, positionChangeRoomName, DRIVER_SOCKET_TYPE, NEW_ALARM_EVENT
+  joinRoom, sendMessageToBO, positionChangeRoomName,
+  DRIVER_SOCKET_TYPE, CITIZEN_SOCKET_TYPE, NEW_ALARM_EVENT
 } = require('../../../web-sockets/index');
 
 const AMBULANCE_NOT_FOUND = 'Ambulance not found';
@@ -87,14 +88,10 @@ function linkCitizenToAmbulance(ambulanceId, citizenId) {
         driverId = driver._id;
         return joinRoom(Citizen, citizenId, positionChangeRoomName(DRIVER_SOCKET_TYPE, driverId));
       })
-      .then(() => {
-        console.log('Notifying Driver');
-        return notifyDriver(driverId, citizenId);
-      })
-      .then(() => {
-        console.log('Resolving');
-        resolve();
-      })
+      .then(() => joinRoom(Driver, driverId,
+        positionChangeRoomName(CITIZEN_SOCKET_TYPE, citizenId)))
+      .then(() => notifyDriver(driverId, citizenId))
+      .then(() => resolve())
       .catch(err => reject(err));
   });
 }
