@@ -7,12 +7,19 @@
 const express = require('express');
 const mongoose = require('mongoose');
 const passport = require('passport');
+const http = require('http');
 const citizensRoutes = require('./routes/citizens/index');
 const hospitalsRoutes = require('./routes/hospitals/index');
+const alarmsRoutes = require('./routes/alarms/index');
+const driversRoutes = require('./routes/drivers/index');
+const webSockets = require('./web-sockets/index');
 const config = require('../../config/database');
 
 // Create the express app
 const app = express();
+const server = http.Server(app);
+webSockets.init(server);
+
 // create the logger middleware
 
 // Initialize the API port
@@ -27,6 +34,8 @@ mongoose.Promise = Promise;
 // Initialize routers
 apiRouter.use('/citizens', citizensRoutes.router);
 apiRouter.use('/hospitals', hospitalsRoutes.router);
+apiRouter.use('/alarms', alarmsRoutes.router);
+apiRouter.use('/drivers', driversRoutes.router);
 
 // Add the logger to express app
 // Use plugins to parse the request body
@@ -34,7 +43,7 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use((req, res, next) => {
   res.header('Access-Control-Allow-Origin', '*');
-  res.header('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept');
+  res.header('Access-Control-Allow-Headers', '*');
   next();
 });
 
@@ -47,7 +56,7 @@ app.use(passport.initialize());
 // Add a linstener on mongoose connection
 mongoose.connection.on('connected', () => {
   // Listen to a specific port
-  app.listen(PORT, () => console.log(`Listening on new port ${PORT}!`));
+  server.listen(PORT, () => console.log(`Listening on port ${PORT}!`));
 });
 
 

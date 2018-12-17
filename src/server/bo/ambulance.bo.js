@@ -27,7 +27,8 @@ const AmbulanceSchema = new Schema({
     required: true
   },
   hospital_id: {
-    type: Schema.Types.String
+    type: Schema.Types.ObjectId,
+    ref: 'Hospital'
   }
 });
 

@@ -6,6 +6,7 @@
 
 // Import the required modules
 const Ambulance = require('../bo/ambulance.bo');
+const Driver = require('../bo/driver.bo');
 
 /*
     * @function
@@ -20,7 +21,7 @@ function save(businessObject) {
       // If there is an error, send it with promise rejection
       if (err) { return reject(err); }
       // Otherwise, resolve the promise
-      return resolve();
+      return resolve(businessObject);
     });
   });
 }
@@ -66,10 +67,23 @@ function findAvailableAmbulancesByHospital(hospitalId, callback) {
   return find(Ambulance, queryParams, callback);
 }
 
+function updateFields(businessSchema, selector, updates, callback) {
+  businessSchema.update(selector, { $set: updates }, callback);
+}
+
+const findAmbulanceDriver = ambulanceId => new Promise((resolve, reject) => {
+  findOne(Driver, { ambulance_id: ambulanceId }, (err, driver) => {
+    if (err || !driver) return reject(err);
+    return resolve(driver);
+  });
+});
+
 // Export the module
 module.exports = {
   save,
   find,
   findOne,
-  findAvailableAmbulancesByHospital
+  updateFields,
+  findAvailableAmbulancesByHospital,
+  findAmbulanceDriver
 };
