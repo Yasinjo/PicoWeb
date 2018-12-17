@@ -49,15 +49,13 @@ function sendAlarm() {
 }
 
 function socketAuthentication() {
-  socket = io(API_HOST);
+  socket = io(`${API_HOST}?userType=CITIZEN_SOCKET_TYPE`);
   socket.on('CITIZEN_AUTH_SUCCESS_EVENT', () => {
     logElt.innerHTML = 'Socket authenticated';
     sendAlarm();
   });
 
   socket.on('AMBULANCE_POSITION_CHANGE_EVENT', (data) => {
-    console.log('AMBULANCE_POSITION_CHANGE_EVENT');
-    console.log(data);
     driverInfo.ambulance_latitude.innerHTML = data.latitude;
     driverInfo.ambulance_longitude.innerHTML = data.longitude;
   });
@@ -78,9 +76,7 @@ function changePosition() {
     longitudeElt.value = message.longitude;
     latitudeElt.value = message.latitude;
 
-    logElt.innerHTML = 'Sending position change';
     socket.emit('POSITION_CHANGE_EVENT', message);
-    logElt.innerHTML = 'Position changed';
   }, 1000);
 }
 

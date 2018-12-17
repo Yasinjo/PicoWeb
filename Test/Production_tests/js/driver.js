@@ -14,7 +14,7 @@ let socket;
 const token = 'JWT eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJfaWQiOiI1YzEyM2QzZmU0ZDkyNTA5ODgyYzI4NWIiLCJpYXQiOjE1NDQ5OTIwMDl9.Wybm5LiS28l9PzSrvxwNv7uTJbTkO6u98UlGw1sAYX0';
 
 function socketAuthentication() {
-  socket = io(API_HOST);
+  socket = io(`${API_HOST}?userType=DRIVER_SOCKET_TYPE`);
   socket.on('DRIVER_AUTH_SUCCESS_EVENT', () => {
     logElt.innerHTML = 'Waiting for alarms';
   });
@@ -30,7 +30,6 @@ function socketAuthentication() {
   });
 
   socket.on('CITIZEN_POSITION_CHANGE_EVENT', (data) => {
-    console.log('Citizen position change :');
     citizenLongitude.innerHTML = data.longitude;
     citizenLatitude.innerHTML = data.latitude;
   });
@@ -51,9 +50,7 @@ function changePosition() {
     longitudeElt.value = message.longitude;
     latitudeElt.value = message.latitude;
 
-    logElt.innerHTML = 'Sending position change';
     socket.emit('POSITION_CHANGE_EVENT', message);
-    logElt.innerHTML = 'Position changed';
   }, 1000);
 }
 

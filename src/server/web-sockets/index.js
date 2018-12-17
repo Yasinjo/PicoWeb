@@ -8,8 +8,8 @@ const { PhoneAccount } = require('../bo/phone_account.bo');
 const { findPhoneAccountFromUserId } = require('../helpers/phoneAccountHelpers');
 
 const CITIZEN_AUNTENTICATION_EVENT = 'CITIZEN_AUNTENTICATION_EVENT';
-const CITIZEN_AUTH_SUCCESS_EVENT = 'CITIZEN_AUTH_SUCCESS_EVENT';
 const DRIVER_AUNTENTICATION_EVENT = 'DRIVER_AUNTENTICATION_EVENT';
+const CITIZEN_AUTH_SUCCESS_EVENT = 'CITIZEN_AUTH_SUCCESS_EVENT';
 const DRIVER_AUTH_SUCCESS_EVENT = 'DRIVER_AUTH_SUCCESS_EVENT';
 const NEW_ALARM_EVENT = 'NEW_ALARM_EVENT';
 const POSITION_CHANGE_EVENT = 'POSITION_CHANGE_EVENT';
@@ -80,6 +80,7 @@ function socketPositionChange(socket, BOSchema) {
     const eventName = (socket.socketType === DRIVER_SOCKET_TYPE)
       ? AMBULANCE_POSITION_CHANGE_EVENT : CITIZEN_POSITION_CHANGE_EVENT;
 
+
     socket.to(positionChangeRoomName(socket.socketType, socket.userId))
       .emit(eventName, msg);
 
@@ -100,22 +101,45 @@ function socketPositionChange(socket, BOSchema) {
   });
 }
 
+function socketDisconnect(socket, BOSchema) {
+  socket.on('disconnect', () => {
+    GenericDAO.findOne(BOSchema, { _id: socket.userId }, (err, businessObject) => {
+      if (err || !businessObject) {
+        return;
+      }
+
+      GenericDAO.updateFields(PhoneAccount, { _id: businessObject.phone_account_id },
+        { socketId: null }, (error) => {
+          if (error) {
+            console.log('socketDisconnect error :');
+            console.log(error);
+          }
+        });
+    });
+  });
+}
+
 function initSocket(socket, AuthenticationEventName,
   BOSchema, SuccessfullAuthEventName, socketType) {
   socketAuth(socket, AuthenticationEventName,
     BOSchema, SuccessfullAuthEventName, socketType);
 
   socketPositionChange(socket, BOSchema);
+
+  socketDisconnect(socket, BOSchema);
 }
 
 function init(server) {
   io = socketIO(server);
-  io.on('connection', (socket) => {
-    initSocket(socket, CITIZEN_AUNTENTICATION_EVENT, Citizen,
-      CITIZEN_AUTH_SUCCESS_EVENT, CITIZEN_SOCKET_TYPE);
 
-    initSocket(socket, DRIVER_AUNTENTICATION_EVENT, Driver,
-      DRIVER_AUTH_SUCCESS_EVENT, DRIVER_SOCKET_TYPE);
+  io.on('connection', (socket) => {
+    if (socket.handshake.query.userType === CITIZEN_SOCKET_TYPE) {
+      initSocket(socket, CITIZEN_AUNTENTICATION_EVENT, Citizen,
+        CITIZEN_AUTH_SUCCESS_EVENT, CITIZEN_SOCKET_TYPE);
+    } else if (socket.handshake.query.userType === DRIVER_SOCKET_TYPE) {
+      initSocket(socket, DRIVER_AUNTENTICATION_EVENT, Driver,
+        DRIVER_AUTH_SUCCESS_EVENT, DRIVER_SOCKET_TYPE);
+    }
   });
 }
 
@@ -135,9 +159,6 @@ function getSocketByBOId(BusinessSchema, userId) {
   return new Promise((resolve, reject) => {
     findPhoneAccountFromUserId(BusinessSchema, userId)
       .then(({ phoneAccount }) => {
-        console.log('phoneAccount.socketId');
-        console.log(phoneAccount.socketId);
-
         const socket = getSocketById(phoneAccount.socketId);
         if (socket) { return resolve(socket); }
         return reject(SOCKET_NOT_FOUND);

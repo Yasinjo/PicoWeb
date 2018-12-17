@@ -45,27 +45,17 @@ router.post('/', passport.authenticate(CITIZEN_AUTH_STRATEGY_NAME, { session: fa
     let ambulance = null;
     checkAmbulanceAvailabilty(request, response)
       .then((ambulanceParam) => {
-        console.log('1');
         ambulance = ambulanceParam;
         const token = getToken(request.headers);
         return extractUserIdFromToken(token);
       })
       .then((userId) => {
-        console.log('2');
         citizenId = userId;
         return reserveAmbulance(request.body.ambulance_id, userId);
       })
-      .then(() => {
-        console.log('3');
-        return linkCitizenToAmbulance(request.body.ambulance_id, citizenId);
-      })
-      .then(() => {
-        console.log('4');
-        return prepareAlarmDataResponse(citizenId, ambulance);
-      })
-      .then((responseParam) => {
-        response.status(201).send({ success: true, ...responseParam });
-      })
+      .then(() => linkCitizenToAmbulance(request.body.ambulance_id, citizenId))
+      .then(() => prepareAlarmDataResponse(citizenId, ambulance))
+      .then(responseParam => response.status(201).send({ success: true, ...responseParam }))
       .catch((err) => {
         console.log('Router error :');
         console.log(err);
