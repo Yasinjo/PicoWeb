@@ -23,14 +23,7 @@ const CITIZEN_POSITION_CHANGE_EVENT = 'CITIZEN_POSITION_CHANGE_EVENT';
 
 let io = null;
 
-const getSocketById = (socketId) => {
-  const ids = socketId.split('#');
-  if (ids.length > 1) {
-    return io.of(ids[0]).connected[socketId];
-  }
-
-  return io.sockets.connected[socketId];
-};
+const getSocketById = socketId => io.sockets.connected[socketId];
 
 const positionChangeRoomName = (socketType, userId) => {
   const root = (socketType === DRIVER_SOCKET_TYPE) ? 'drivers' : 'citizens';
