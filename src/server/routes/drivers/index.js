@@ -4,13 +4,14 @@
 */
 
 // Import the required modules
+const path = require('path');
 const express = require('express');
 const Driver = require('../../bo/driver.bo');
 const Ambulance = require('../../bo/ambulance.bo');
 const { DRIVER_PHONE_ACCOUNT_TYPE } = require('../../bo/phone_account.bo');
 const GenericDAO = require('../../dao/genericDAO');
 const verifyRequiredFields = require('../../helpers/verifyRequiredFields');
-const { uploadMiddleware } = require('../../helpers/uploadPictureHelper');
+const { uploadMiddleware, UPLOADS_PATH } = require('../../helpers/uploadPictureHelper');
 const { signupUser, signinUser } = require('../../helpers/genericRoutesHelper');
 const { AMBULANCE_NOT_FOUND } = require('../alarms/helpers/index');
 
@@ -106,6 +107,9 @@ router.patch('/:driver_id/ambulance', uploadMiddleware.single('image'), (request
     });
   });
 });
+
+// Image routing
+router.use('/image', express.static(path.join(UPLOADS_PATH, DRIVERS_REPO_NAME)));
 
 module.exports = {
   router,

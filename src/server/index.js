@@ -4,7 +4,6 @@
 */
 
 // Import the required modules
-const path = require('path');
 const express = require('express');
 const mongoose = require('mongoose');
 const passport = require('passport');
@@ -15,8 +14,6 @@ const alarmsRoutes = require('./routes/alarms/index');
 const driversRoutes = require('./routes/drivers/index');
 const webSockets = require('./web-sockets/index');
 const config = require('../../config/database');
-
-const { UPLOADS_PATH } = require('./helpers/uploadPictureHelper');
 
 // Create the express app
 const app = express();
@@ -53,13 +50,9 @@ app.use((req, res, next) => {
 // Initialize the API entering point
 app.use('/api', apiRouter);
 
-app.use('/images/drivers', express.static(path.join(UPLOADS_PATH, driversRoutes.DRIVERS_REPO_NAME)));
-app.use('/images/citizens', express.static(path.join(UPLOADS_PATH, citizensRoutes.CITIZENS_REPO_NAME)));
-
 // Add the authentication module
 app.use(passport.initialize());
 
-app.get('/', (req, res) => res.send(`Hello world ${path.join(UPLOADS_PATH, driversRoutes.DRIVERS_REPO_NAME)}`));
 // Add a linstener on mongoose connection
 mongoose.connection.on('connected', () => {
   // Listen to a specific port

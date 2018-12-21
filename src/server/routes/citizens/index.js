@@ -6,10 +6,11 @@
 // Import the required modules
 const express = require('express');
 const passport = require('passport');
+const path = require('path');
 
 const Citizen = require('../../bo/citizen.bo');
 const { CITIZEN_PHONE_ACCOUNT_TYPE } = require('../../bo/phone_account.bo');
-const { uploadMiddleware } = require('../../helpers/uploadPictureHelper');
+const { uploadMiddleware, UPLOADS_PATH } = require('../../helpers/uploadPictureHelper');
 const { signupUser, signinUser } = require('../../helpers/genericRoutesHelper');
 const addAuthStrategy = require('../../auth/addAuthStrategy');
 
@@ -76,6 +77,9 @@ router.post('/signin', (request, response) => {
   // Call the generic function signinUser
   signinUser(Citizen, request, response, CITIZEN_PHONE_ACCOUNT_TYPE, verifyAccountActivation);
 });
+
+// Image routing
+router.use('/image', express.static(path.join(UPLOADS_PATH, CITIZENS_REPO_NAME)));
 
 // Export the module
 module.exports = {
