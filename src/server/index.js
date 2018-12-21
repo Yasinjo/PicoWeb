@@ -59,7 +59,7 @@ app.use('/images/citizens', express.static(path.join(UPLOADS_PATH, citizensRoute
 // Add the authentication module
 app.use(passport.initialize());
 
-app.get('/', (req, res) => res.send('Hello world !'));
+app.get('/', (req, res) => res.send(`Hello world ${path.join(UPLOADS_PATH, driversRoutes.DRIVERS_REPO_NAME)}`));
 // Add a linstener on mongoose connection
 mongoose.connection.on('connected', () => {
   // Listen to a specific port
