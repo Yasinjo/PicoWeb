@@ -108,5 +108,6 @@ router.patch('/:driver_id/ambulance', uploadMiddleware.single('image'), (request
 });
 
 module.exports = {
-  router
+  router,
+  DRIVERS_REPO_NAME
 };

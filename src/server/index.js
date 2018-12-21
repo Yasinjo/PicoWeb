@@ -15,6 +15,8 @@ const driversRoutes = require('./routes/drivers/index');
 const webSockets = require('./web-sockets/index');
 const config = require('../../config/database');
 
+const { UPLOADS_PATH } = require('./helpers/uploadPictureHelper');
+
 // Create the express app
 const app = express();
 const server = http.Server(app);
@@ -49,6 +51,9 @@ app.use((req, res, next) => {
 
 // Initialize the API entering point
 app.use('/api', apiRouter);
+
+app.use('/images/drivers', express.static(`${UPLOADS_PATH}/${driversRoutes.DRIVERS_REPO_NAME}`));
+app.use('/images/citizens', express.static(`${UPLOADS_PATH}/${citizensRoutes.CITIZENS_REPO_NAME}`));
 
 // Add the authentication module
 app.use(passport.initialize());
