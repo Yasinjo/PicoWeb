@@ -9,7 +9,9 @@ const path = require('path');
 const multer = require('multer');
 
 // Get the uploads path
-const UPLOADS_PATH = path.resolve('public', 'uploads');
+const appRoot = require('app-root-path');
+
+const UPLOADS_PATH = path.resolve(appRoot.toString(), 'public', 'uploads');
 const DEFAULT_EXTENSION = 'jpg';
 
 // Customize the multer middleware to work on memory
