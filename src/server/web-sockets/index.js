@@ -45,25 +45,27 @@ function socketAuth(socket, AuthenticationEventName,
   BOSchema, SuccessfullAuthEventName, socketType) {
   socket.auth = false;
   socket.on(AuthenticationEventName, (data) => {
-    extractUserIdFromToken(data.token)
-      .then((userId) => {
-        GenericDAO.findOne(BOSchema, { _id: userId }, (err, user) => {
-          if (err || !user) return;
-          socket.auth = true;
-          socket.userId = userId;
-          socket.socketType = socketType;
-          updateSocket(user, socket)
-            .then(() => socket.emit(SuccessfullAuthEventName, { success: true }))
-            .catch((error) => {
-              console.log('updateSocket error :');
-              console.log(error);
-            });
-        });
+    if (data.token) {
+      extractUserIdFromToken(data.token)
+        .then((userId) => {
+          GenericDAO.findOne(BOSchema, { _id: userId }, (err, user) => {
+            if (err || !user) return;
+            socket.auth = true;
+            socket.userId = userId;
+            socket.socketType = socketType;
+            updateSocket(user, socket)
+              .then(() => socket.emit(SuccessfullAuthEventName, { success: true }))
+              .catch((error) => {
+                console.log('updateSocket error :');
+                console.log(error);
+              });
+          });
         // Android communication
-      }).catch((err) => {
-        console.log('socketAuth error');
-        console.log(err);
-      });
+        }).catch((err) => {
+          console.log('socketAuth error');
+          console.log(err);
+        });
+    }
   });
 }
 

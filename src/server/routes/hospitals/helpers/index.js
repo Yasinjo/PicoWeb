@@ -56,10 +56,11 @@ function getAllHospitals(request, response) {
       - 403
       - 500
       - 200 :
-        { success : <boolean>,
+        {
+          success : <boolean>,
           ambulances : [
             {
-                _id : <string>
+                _id : <string>,
                 registration_number : <string>,
                 latitude : <number>,
                 longiude : <number>,

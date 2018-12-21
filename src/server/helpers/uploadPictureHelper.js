@@ -9,7 +9,8 @@ const path = require('path');
 const multer = require('multer');
 
 // Get the uploads path
-const uploadsPath = path.resolve('public', 'uploads');
+const UPLOADS_PATH = path.resolve('public', 'uploads');
+const DEFAULT_EXTENSION = 'jpg';
 
 // Customize the multer middleware to work on memory
 const storage = multer.memoryStorage();
@@ -23,8 +24,8 @@ const uploadMiddleware = multer({ storage });
     * @param{callback}[function] : the function to call after uploading the picture
 */
 function uploadPictureHelper(imageBuffer, imageNewFileName, directoryName, callback) {
-  const parentDir = `${uploadsPath}/${directoryName}`;
-  const newPath = `${parentDir}/${imageNewFileName}`;
+  const parentDir = `${UPLOADS_PATH}/${directoryName}`;
+  const newPath = `${parentDir}/${imageNewFileName}.${DEFAULT_EXTENSION}`;
   // Create the parent directory if it doesn't exist
   if (!fs.existsSync(parentDir)) fs.mkdirSync(parentDir);
   // Create the file
@@ -34,5 +35,6 @@ function uploadPictureHelper(imageBuffer, imageNewFileName, directoryName, callb
 // Export the module
 module.exports = {
   uploadMiddleware,
-  uploadPictureHelper
+  uploadPictureHelper,
+  UPLOADS_PATH
 };

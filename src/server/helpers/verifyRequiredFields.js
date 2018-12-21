@@ -7,6 +7,8 @@
 // Import the required modules
 const _ = require('lodash');
 
+const PROVIDE_DATA_ERROR = 'Please provide all the required data.';
+
 /*
     * @function
     * @description : verify the required fields in the body of a http request
@@ -21,7 +23,7 @@ function verifyRequiredFields(request, response, requiredKeys) {
     // Resolve the promise if everything is alright
     if (requiredKeysTest) resolve();
     // Otherwise send a 'bad request' http response
-    else response.status(400).json({ success: false, msg: 'Please provide all the required data.' });
+    else response.status(400).json({ success: false, msg: PROVIDE_DATA_ERROR });
   });
 }
 

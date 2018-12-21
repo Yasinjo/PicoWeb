@@ -80,5 +80,6 @@ router.post('/signin', (request, response) => {
 // Export the module
 module.exports = {
   CITIZEN_AUTH_STRATEGY_NAME,
+  CITIZENS_REPO_NAME,
   router
 };
