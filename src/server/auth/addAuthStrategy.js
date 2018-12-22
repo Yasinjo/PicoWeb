@@ -20,7 +20,7 @@ const authConfig = require('../../../config/auth.json');
     * @param{businessSchema}[mongoose Schema] : the business object Schema
       to use in token verification
 */
-function addAuthStrategy(authManager, businessSchema, strategyName) {
+function addAuthStrategy(authManager, businessSchema, strategyName, verifyActivation) {
   // Create the authentication strategy options
   const opts = {};
   opts.jwtFromRequest = ExtractJwt.fromAuthHeaderWithScheme('jwt');
@@ -30,8 +30,8 @@ function addAuthStrategy(authManager, businessSchema, strategyName) {
   const strategy = new JwtStrategy(opts, (jwtPayload, done) => {
     // To verify a token, we should find an existing item with the same id in the token
     GenericDAO.findOne(businessSchema, { id: jwtPayload.id }, (err, businessObject) => {
-      if (err) { return done(err, false); }
-      return (businessObject) ? done(null, true) : done(null, false);
+      if (err || !businessObject) { return done(err, false); }
+      return (verifyActivation) ? done(null, businessObject.isActive()) : done(null, true);
     });
   });
 

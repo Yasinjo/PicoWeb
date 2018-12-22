@@ -23,7 +23,7 @@ const CITIZENS_REPO_NAME = 'CITIZENS_REPO_NAME';
 const router = express.Router();
 
 // Add the citizen authentication strategy to the passport module
-addAuthStrategy(passport, Citizen, CITIZEN_AUTH_STRATEGY_NAME);
+addAuthStrategy(passport, Citizen, CITIZEN_AUTH_STRATEGY_NAME, true);
 
 
 function verifyAccountActivation(resolve, reject, citizen) {
