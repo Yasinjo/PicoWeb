@@ -27,6 +27,10 @@ const AlarmSchema = new Schema({
   isFake: {
     type: Schema.Types.Boolean,
     default: false
+  },
+  responsible_driver_id: {
+    type: Schema.Types.ObjectId,
+    ref: 'Driver'
   }
 });
 

@@ -63,6 +63,7 @@ function findAvailableAmbulancesByHospital(hospitalId, callback) {
       { hospital_id: hospitalId }
     ]
   };
+
   // Find the results
   return find(Ambulance, queryParams, callback);
 }

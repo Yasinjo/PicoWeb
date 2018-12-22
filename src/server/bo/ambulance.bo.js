@@ -16,7 +16,8 @@ const AmbulanceSchema = new Schema({
   },
   available: {
     type: Schema.Types.Boolean,
-    required: true
+    required: true,
+    default: true
   },
   latitude: {
     type: Schema.Types.Number,

@@ -4,6 +4,7 @@
 */
 
 // Import the required modules
+const _ = require('lodash');
 const GenericDAO = require('../../../dao/genericDAO');
 const Hospital = require('../../../bo/hospital.bo');
 const getToken = require('../../../helpers/getToken');
@@ -88,8 +89,33 @@ function getAmbulancesByHospital(request, response) {
   return response.status(403).send({ success: false });
 }
 
+/*
+    * @function
+    * @description : save a hospital in the database
+    * @param{request}[Object] : the http request object
+    * @param{response}[Object] : the http response object
+    * @Response body :
+      - 500 :
+        {
+          success : <boolean>,
+          error : <Object>
+        }
+      - 201 :
+        {
+          success : <boolean>,
+          hospital_id : <string>
+        }
+*/
+function saveHospital(request, response, dataKeys) {
+  const hospital = new Hospital(_.pick(request.body, dataKeys));
+  GenericDAO.save(hospital)
+    .then(() => response.status(201).send({ success: true, hospital_id: hospital._id }))
+    .catch(error => response.status(500).send({ success: false, error }));
+}
+
 // Export the module
 module.exports = {
   getAllHospitals,
-  getAmbulancesByHospital
+  getAmbulancesByHospital,
+  saveHospital
 };
