@@ -19,7 +19,7 @@ const router = express.Router();
         registration_number : <string>{required},
         latitude : <number>{required},
         longitude : <number>{required},
-        hospital_id : <number>{optional}
+        hospital_id : <string>{optional}
       }
     * @Response body :
       - 400 :

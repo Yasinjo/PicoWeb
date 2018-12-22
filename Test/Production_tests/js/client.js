@@ -3,9 +3,15 @@ const logElt = document.getElementById('log');
 const longitudeElt = document.getElementById('longitude');
 const latitudeElt = document.getElementById('latitude');
 const driverInfosDiv = document.getElementById('driver_infos_location');
+const driverIdFeedback = document.getElementById('driver_id_feedback');
+const alarmIdFeedback = document.getElementById('alarm_id_feedback');
+const feedbackPanel = document.getElementById('feedbackPanel');
+const commentField = document.getElementById('comment');
+const percentageField = document.getElementById('percentage');
 
 const driverInfoKeys = ['driver_id', 'driver_full_name', 'ambulance_registration_number', 'ambulance_longitude', 'ambulance_latitude'];
 const driverInfo = {};
+let currentAlarmID;
 
 for (const key of driverInfoKeys) {
   driverInfo[key] = document.getElementById(key);
@@ -15,13 +21,7 @@ let socket;
 
 const token = 'JWT eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJfaWQiOiI1YzEyM2Y1MGE0MjNiMDI0ZTg5ZGJjMDciLCJpYXQiOjE1NDQ4MTYxMzJ9.znGzy44xdHaMfwkbMfE4vSY5lCzgAb_o-_RMEsq1bWQ';
 const ambulanceId = '5bf54f597f47c57269b73f1e';
-// Authenticate with socket
-// Send alarm to an available ambulance (static)
-// See ambulance position, driver name and position
-// See real time, change of position
-// Change the citizen position
 
-// Send alarm to an available ambulance (static)
 function sendAlarm() {
   const data = JSON.stringify({
     ambulance_id: ambulanceId
@@ -48,6 +48,13 @@ function sendAlarm() {
     });
 }
 
+function missionAccomplishedHandler(data) {
+  driverIdFeedback.innerHTML = data.driver_id;
+  alarmIdFeedback.innerHTML = data.alarm_id;
+  currentAlarmID = data.alarm_id;
+  feedbackPanel.className = 'visible';
+}
+
 function socketAuthentication() {
   socket = io(`${API_HOST}?userType=CITIZEN_SOCKET_TYPE`);
   socket.on('CITIZEN_AUTH_SUCCESS_EVENT', () => {
@@ -59,6 +66,11 @@ function socketAuthentication() {
     driverInfo.ambulance_latitude.innerHTML = data.latitude;
     driverInfo.ambulance_longitude.innerHTML = data.longitude;
   });
+
+  socket.on('MISSION_ACCOMPLISHED_EVENT', missionAccomplishedHandler);
+
+  socket.on('ALARM_NOT_FOUND_EVENT', () => console.log('ALARM_NOT_FOUND_EVENT'));
+  socket.on('UNAUTHORIZED_FEEDBACK_EVENT', () => console.log('UNAUTHORIZED_FEEDBACK_EVENT'));
 
   socket.on('connect', () => {
     logElt.innerHTML = 'Socket connected';
@@ -78,6 +90,16 @@ function changePosition() {
 
     socket.emit('POSITION_CHANGE_EVENT', message);
   }, 1000);
+}
+
+function sendFeedback() {
+  const message = {
+    alarm_id: currentAlarmID,
+    percentage: percentageField.options[percentageField.selectedIndex].value,
+    comment: commentField.value,
+  };
+
+  socket.emit('CITIZEN_FEEDBACK_EVENT', message);
 }
 
 

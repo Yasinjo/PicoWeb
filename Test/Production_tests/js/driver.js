@@ -8,10 +8,24 @@ const citizenId = document.getElementById('citizen_id');
 const citizenName = document.getElementById('citizen_name');
 const citizenLongitude = document.getElementById('citizen_logitude');
 const citizenLatitude = document.getElementById('citizen_latitude');
-
+const currentAlarmIDLabel = document.getElementById('current_alarm_id');
+const newFeedback = document.getElementById('new_feedback');
+const feedbackAlarmId = document.getElementById('feedback_alarm_id');
+const feedbackCitizenId = document.getElementById('feedback_citizen_id');
+const feedbackPercentage = document.getElementById('feedback_percentage');
+const feedbackComment = document.getElementById('feedback_comment');
+let currentAlarmID;
 let socket;
 
 const token = 'JWT eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJfaWQiOiI1YzEyM2QzZmU0ZDkyNTA5ODgyYzI4NWIiLCJpYXQiOjE1NDQ5OTIwMDl9.Wybm5LiS28l9PzSrvxwNv7uTJbTkO6u98UlGw1sAYX0';
+
+function newFeeedbackHandler(data) {
+  newFeedback.className = 'visible';
+  feedbackAlarmId.innerHTML = data.alarm_id;
+  feedbackCitizenId.innerHTML = data.citizen_id;
+  feedbackPercentage.innerHTML = data.percentage;
+  feedbackComment.innerHTML = data.comment;
+}
 
 function socketAuthentication() {
   socket = io(`${API_HOST}?userType=DRIVER_SOCKET_TYPE`);
@@ -27,12 +41,19 @@ function socketAuthentication() {
     citizenName.innerHTML = data.full_name;
     citizenLongitude.innerHTML = data.longitude;
     citizenLatitude.innerHTML = data.latitude;
+    currentAlarmIDLabel.innerHTML = data.alarm_id;
+    currentAlarmID = data.alarm_id;
   });
 
   socket.on('CITIZEN_POSITION_CHANGE_EVENT', (data) => {
     citizenLongitude.innerHTML = data.longitude;
     citizenLatitude.innerHTML = data.latitude;
   });
+
+  socket.on('ALARM_NOT_FOUND_EVENT', () => console.log('ALARM_NOT_FOUND_EVENT'));
+  socket.on('UNAUTHORIZED_MISSION_COMPLETION_EVENT', () => console.log('UNAUTHORIZED_MISSION_COMPLETION_EVENT'));
+
+  socket.on('CITIZEN_FEEDBACK_EVENT', newFeeedbackHandler);
 
   socket.on('connect', () => {
     logElt.innerHTML = 'Socket connected';
@@ -54,6 +75,10 @@ function changePosition() {
   }, 1000);
 }
 
+function missionAccomplished() {
+  newAlarmDiv.className = 'hidden';
+  socket.emit('MISSION_ACCOMPLISHED_EVENT', { alarm_id: currentAlarmID });
+}
 
 // function login() {
 //   fetch(`${API_HOST}/api/citizens/signin`,

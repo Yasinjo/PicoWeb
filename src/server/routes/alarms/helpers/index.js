@@ -58,11 +58,12 @@ function reserveAmbulance(ambulanceId, citizenId) {
   });
 }
 
-function notifyDriver(driverId, citizenId) {
+function notifyDriver(driverId, citizenId, alarmId) {
   return new Promise((resolve, reject) => {
     findPhoneAccountFromUserId(Citizen, citizenId)
       .then(({ businessObject, phoneAccount }) => {
         const message = {
+          alarm_id: alarmId,
           citizen_id: citizenId,
           full_name: businessObject.full_name,
           longitude: phoneAccount.longitude,
@@ -80,7 +81,7 @@ function notifyDriver(driverId, citizenId) {
   });
 }
 
-function linkCitizenToAmbulance(ambulanceId, citizenId) {
+function linkCitizenToAmbulance(ambulanceId, citizenId, alarmId) {
   return new Promise((resolve, reject) => {
     let driverId = null;
     GenericDAO.findAmbulanceDriver(ambulanceId)
@@ -90,7 +91,7 @@ function linkCitizenToAmbulance(ambulanceId, citizenId) {
       })
       .then(() => joinRoom(Driver, driverId,
         positionChangeRoomName(CITIZEN_SOCKET_TYPE, citizenId)))
-      .then(() => notifyDriver(driverId, citizenId))
+      .then(() => notifyDriver(driverId, citizenId, alarmId))
       .then(() => resolve())
       .catch(err => reject(err));
   });

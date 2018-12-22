@@ -23,6 +23,8 @@
       <br />
 
       <div id="new_alarm_div" class="hidden">
+        <b>Current Alarm ID : </b> <label id="current_alarm_id"></label> <br />
+        <br />
         <b>Citizen ID : </b> <label id="citizen_id"></label> <br />
         <br />
         <b>Citizen full name : </b> <label id="citizen_name"></label> <br />
@@ -32,8 +34,25 @@
         <b>Citizen latitude : </b> <label id="citizen_latitude"></label><br />
         <br />
 
-        <button id="fake_declaration">Declare alarm as fake</button> &nbsp;
-        &nbsp; <button id="mission_accomplished">Mission accomplished</button>
+        <button id="mission_accomplished" onclick="missionAccomplished();">
+          Mission accomplished
+        </button>
+        &nbsp; &nbsp;
+        <button id="fake_declaration">Declare alarm as fake</button>
+      </div>
+
+      <div id="new_feedback" class="hidden">
+        <b>New feedback :</b> <br />
+        <br />
+        <b>Alarm ID : </b> <label id="feedback_alarm_id"></label> <br />
+        <br />
+        <b>Citizen ID : </b> <label id="feedback_citizen_id"></label> <br />
+        <br />
+        <b>Feedback percentage : </b> <label id="feedback_percentage"></label>
+        <br />
+        <br />
+        <b>Feedback comment : </b> <label id="feedback_comment"></label> <br />
+        <br />
       </div>
     </div>
   </body>

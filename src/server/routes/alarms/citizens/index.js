@@ -53,7 +53,7 @@ router.post('/', passport.authenticate(CITIZEN_AUTH_STRATEGY_NAME, { session: fa
         citizenId = userId;
         return reserveAmbulance(request.body.ambulance_id, userId);
       })
-      .then(() => linkCitizenToAmbulance(request.body.ambulance_id, citizenId))
+      .then(alarm => linkCitizenToAmbulance(request.body.ambulance_id, citizenId, alarm._id))
       .then(() => prepareAlarmDataResponse(citizenId, ambulance))
       .then(responseParam => response.status(201).send({ success: true, ...responseParam }))
       .catch((err) => {

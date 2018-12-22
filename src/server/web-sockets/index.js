@@ -5,6 +5,7 @@ const GenericDAO = require('../dao/genericDAO');
 const Citizen = require('../bo/citizen.bo');
 const Driver = require('../bo/driver.bo');
 const Alarm = require('../bo/alarm.bo');
+const Ambulance = require('../bo/ambulance.bo');
 const Feedback = require('../bo/feedback.bo');
 const { PhoneAccount } = require('../bo/phone_account.bo');
 const { findPhoneAccountFromUserId } = require('../helpers/phoneAccountHelpers');
@@ -100,7 +101,7 @@ function socketPositionChange(socket, BOSchema) {
       ? AMBULANCE_POSITION_CHANGE_EVENT : CITIZEN_POSITION_CHANGE_EVENT;
 
 
-    socket.to((socket.socketType, socket.userId))
+    socket.to(positionChangeRoomName(socket.socketType, socket.userId))
       .emit(eventName, msg);
 
     // Update position in the database
@@ -170,7 +171,8 @@ function verifyMissionAccomplishedData(socket, data) {
       if (err || !alarm) return socket.emit(ALARM_NOT_FOUND_EVENT);
 
       return GenericDAO.findOne(Driver, { _id: socket.userId }, (err2, driver) => {
-        if (err2 || !driver || driver.ambulance_id !== alarm.ambulance_id) {
+        if (err2 || !driver || !driver.ambulance_id
+            || driver.ambulance_id.toString() !== alarm.ambulance_id.toString()) {
           return socket.emit(UNAUTHORIZED_MISSION_COMPLETION_EVENT);
         }
 
@@ -180,17 +182,29 @@ function verifyMissionAccomplishedData(socket, data) {
   });
 }
 
+function makeAmbulanceAvailable(ambulanceId) {
+  GenericDAO.updateFields(Ambulance, { _id: ambulanceId }, { available: true }, (err) => {
+    if (err) {
+      console.log('makeAmbulanceAvailable error :');
+      console.log(err);
+    }
+  });
+}
+
 function missionAccomplishedHandler(driverSocket, data) {
+  if (!isSocketAuth(driverSocket)) return;
   let alarm;
   verifyMissionAccomplishedData(driverSocket, data)
     .then((alarmParam) => {
       alarm = alarmParam;
-      getSocketByBOId(Citizen, alarm.citizen_id);
+      return getSocketByBOId(Citizen, alarm.citizen_id);
     })
     .then((citizenSocket) => {
+      makeAmbulanceAvailable(alarm.ambulance_id);
       citizenSocket.leave(positionChangeRoomName(DRIVER_SOCKET_TYPE, driverSocket.userId));
       driverSocket.leave(positionChangeRoomName(CITIZEN_SOCKET_TYPE, citizenSocket.userId));
-      citizenSocket.emit(MISSION_ACCOMPLISHED_EVENT, { driver_id: driverSocket.userId });
+      citizenSocket.emit(MISSION_ACCOMPLISHED_EVENT,
+        { driver_id: driverSocket.userId, alarm_id: alarm._id });
     });
 }
 
@@ -200,7 +214,7 @@ function verifyCitizenFeedbackData(socket, data) {
 
     return GenericDAO.findOne(Alarm, { _id: data.alarm_id }, (err, alarm) => {
       if (err || !alarm) return socket.emit(ALARM_NOT_FOUND_EVENT);
-      if (alarm.citizen_id !== socket.userId) {
+      if (alarm.citizen_id.toString() !== socket.userId.toString()) {
         return socket.emit(UNAUTHORIZED_FEEDBACK_EVENT);
       }
 
@@ -222,6 +236,7 @@ function saveFeedBack(feedbackData) {
 
 
 function citizenFeedbackHandler(citizenSocket, data) {
+  if (!isSocketAuth(citizenSocket)) return;
   verifyCitizenFeedbackData(citizenSocket, data)
     .then(({ driver }) => {
       const feedbackData = {
@@ -236,6 +251,7 @@ function citizenFeedbackHandler(citizenSocket, data) {
     })
     .then((driverSocket) => {
       const message = {
+        alarm_id: data.alarm_id,
         citizen_id: citizenSocket.userId,
         comment: data.comment,
         percentage: data.percentage
