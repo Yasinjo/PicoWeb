@@ -8,8 +8,10 @@ const _ = require('lodash');
 const GenericDAO = require('../../../dao/genericDAO');
 const Ambulance = require('../../../bo/ambulance.bo');
 const Hospital = require('../../../bo/hospital.bo');
+const { uploadPictureHelper } = require('../../../helpers/uploadPictureHelper');
 
 const HOSPITAL_NOT_FOUND = 'Hôspital not found';
+const AMBULANCES_REPO_NAME = 'AMBULANCES_REPO_NAME';
 
 /*
     * @function
@@ -37,7 +39,13 @@ function saveAmbulance(request, response, dataKeys) {
   const ambulance = new Ambulance(_.pick(request.body, dataKeys));
   const save = () => {
     GenericDAO.save(ambulance)
-      .then(() => response.status(201).send({ success: true, ambulance_id: ambulance._id }))
+      .then(() => {
+        // Upload the image file (if there is an image), and send the response
+        if (request.file && request.file.buffer) {
+          uploadPictureHelper(request.file.buffer, ambulance._id, AMBULANCES_REPO_NAME,
+            () => response.status(201).json({ success: true, ambulance_id: ambulance._id }));
+        } else { response.status(201).json({ success: true, ambulance_id: ambulance._id }); }
+      })
       .catch(error => response.status(500).send({ success: false, error }));
   };
   // Check if the hospital exists

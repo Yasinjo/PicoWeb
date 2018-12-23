@@ -120,7 +120,7 @@ function changePosition() {
 
     currentPositionIndex += 1;
     socket.emit('POSITION_CHANGE_EVENT', message);
-  }, 1000);
+  }, 3000);
 }
 
 function missionAccomplished() {
