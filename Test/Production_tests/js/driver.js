@@ -1,5 +1,5 @@
-// const API_HOST = 'http://localhost:9090';
-const API_HOST = 'http://pico.ossrv.nl:9090';
+const API_HOST = 'http://localhost:9090';
+// const API_HOST = 'http://pico.ossrv.nl:9090';
 const logElt = document.getElementById('log');
 const longitudeElt = document.getElementById('longitude');
 const latitudeElt = document.getElementById('latitude');

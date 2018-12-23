@@ -62,6 +62,9 @@ function socketAuth(socket, AuthenticationEventName,
   BOSchema, SuccessfullAuthEventName, socketType) {
   setSocketAuth(socket, false);
   socket.on(AuthenticationEventName, (data) => {
+    console.log(`New authentication ${AuthenticationEventName} :`);
+    console.log(data.token);
+
     if (data.token) {
       extractUserIdFromToken(data.token)
         .then((userId) => {
@@ -71,7 +74,10 @@ function socketAuth(socket, AuthenticationEventName,
             socket.userId = userId;
             socket.socketType = socketType;
             updateSocket(user, socket)
-              .then(() => socket.emit(SuccessfullAuthEventName, { success: true }))
+              .then(() => {
+                console.log(`Successful Auth :${SuccessfullAuthEventName}`);
+                socket.emit(SuccessfullAuthEventName, { success: true });
+              })
               .catch((error) => {
                 console.log('updateSocket error :');
                 console.log(error);
