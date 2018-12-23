@@ -17,7 +17,43 @@ const feedbackPercentage = document.getElementById('feedback_percentage');
 const feedbackComment = document.getElementById('feedback_comment');
 let currentAlarmID;
 let socket;
-
+let currentPositionIndex = 0;
+let intervalID;
+const staticPosition = [
+  { latitude: 33.698424, longitude: -7.383894 },
+  { latitude: 33.698638, longitude: -7.383121 },
+  { latitude: 33.699495, longitude: -7.381619 },
+  { latitude: 33.699923, longitude: -7.380546 },
+  { latitude: 33.700602, longitude: -7.379345 },
+  { latitude: 33.700995, longitude: -7.378358 },
+  { latitude: 33.701352, longitude: -7.377757 },
+  { latitude: 33.701637, longitude: -7.377070 },
+  { latitude: 33.701887, longitude: -7.376298 },
+  { latitude: 33.702244, longitude: -7.375568 },
+  { latitude: 33.703743, longitude: -7.372049 },
+  { latitude: 33.703993, longitude: -7.371319 },
+  { latitude: 33.704243, longitude: -7.370676 },
+  { latitude: 33.704993, longitude: -7.369130 },
+  { latitude: 33.705957, longitude: -7.366341 },
+  { latitude: 33.706349, longitude: -7.365225 },
+  { latitude: 33.706420, longitude: -7.363980 },
+  { latitude: 33.706349, longitude: -7.363293 },
+  { latitude: 33.706206, longitude: -7.362006 },
+  { latitude: 33.705991, longitude: -7.359130 },
+  { latitude: 33.705741, longitude: -7.357842 },
+  { latitude: 33.705703, longitude: -7.357112 },
+  { latitude: 33.705317, longitude: -7.356924 },
+  { latitude: 33.704996, longitude: -7.357374 },
+  { latitude: 33.703710, longitude: -7.358404 },
+  { latitude: 33.703050, longitude: -7.359188 },
+  { latitude: 33.702550, longitude: -7.359928 },
+  { latitude: 33.702104, longitude: -7.360411 },
+  { latitude: 33.701702, longitude: -7.360936 },
+  { latitude: 33.701184, longitude: -7.361537 },
+  { latitude: 33.700765, longitude: -7.362127 },
+  { latitude: 33.700453, longitude: -7.362449 },
+  { latitude: 33.700301, longitude: -7.362664 }
+];
 const token = 'JWT eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJfaWQiOiI1YzFmOGE1MzQxNzFiZjM3MTAwMWQzNDAiLCJpYXQiOjE1NDU1NzExMjd9.xJ15afIYLIznDY_vgTbvBPVcviu5SjlDDhsNKuXKzA8';
 
 function newFeeedbackHandler(data) {
@@ -63,15 +99,19 @@ function socketAuthentication() {
 }
 
 function changePosition() {
-  setInterval(() => {
+  intervalID = setInterval(() => {
+    if (currentPositionIndex === staticPosition.length) {
+      return clearInterval(intervalID);
+    }
     const message = {
-      longitude: Math.random() * 100000,
-      latitude: Math.random() * 100000,
+      latitude: staticPosition[currentPositionIndex].latitude,
+      longitude: staticPosition[currentPositionIndex].longitude,
     };
 
     longitudeElt.value = message.longitude;
     latitudeElt.value = message.latitude;
 
+    currentPositionIndex += 1;
     socket.emit('POSITION_CHANGE_EVENT', message);
   }, 1000);
 }
