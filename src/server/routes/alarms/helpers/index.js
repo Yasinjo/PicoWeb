@@ -87,10 +87,11 @@ function linkCitizenToAmbulance(ambulanceId, citizenId, alarmId) {
     GenericDAO.findAmbulanceDriver(ambulanceId)
       .then((driver) => {
         driverId = driver._id;
-        return joinRoom(Citizen, citizenId, positionChangeRoomName(DRIVER_SOCKET_TYPE, driverId));
+        return joinRoom(Citizen, citizenId,
+          positionChangeRoomName(DRIVER_SOCKET_TYPE, driverId), DRIVER_SOCKET_TYPE);
       })
       .then(() => joinRoom(Driver, driverId,
-        positionChangeRoomName(CITIZEN_SOCKET_TYPE, citizenId)))
+        positionChangeRoomName(CITIZEN_SOCKET_TYPE, citizenId), CITIZEN_SOCKET_TYPE))
       .then(() => notifyDriver(driverId, citizenId, alarmId))
       .then(() => resolve())
       .catch(err => reject(err));

@@ -43,8 +43,6 @@ router.post('/', passport.authenticate(CITIZEN_AUTH_STRATEGY_NAME, { session: fa
   (request, response) => {
     let citizenId = null;
     let ambulance = null;
-    console.log('New alarm :');
-    console.log(request.body);
     checkAmbulanceAvailabilty(request, response)
       .then((ambulanceParam) => {
         console.log('1');
@@ -59,7 +57,11 @@ router.post('/', passport.authenticate(CITIZEN_AUTH_STRATEGY_NAME, { session: fa
       })
       .then((alarm) => {
         console.log('3');
-        linkCitizenToAmbulance(request.body.ambulance_id, citizenId, alarm._id).catch();
+        linkCitizenToAmbulance(request.body.ambulance_id, citizenId, alarm._id)
+          .catch((err) => {
+            console.log('linkCitizenToAmbulance error :');
+            console.log(err);
+          });
         return prepareAlarmDataResponse(citizenId, ambulance);
       })
       .then(responseParam => response.status(201).send({ success: true, ...responseParam }))

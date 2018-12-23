@@ -155,14 +155,14 @@ function getSocketByBOId(BusinessSchema, userId) {
 }
 
 
-function joinRoom(BusinessSchema, userId, roomName) {
+function joinRoom(BusinessSchema, userId, roomName, socketType) {
   return new Promise((resolve, reject) => {
     getSocketByBOId(BusinessSchema, userId)
       .then((socket) => {
         socket.join(roomName);
         resolve();
       })
-      .catch(err => reject(err));
+      .catch(err => reject({ socketType, err }));
   });
 }
 

@@ -64,6 +64,10 @@ function newFeeedbackHandler(data) {
   feedbackComment.innerHTML = data.comment;
 }
 
+function successfulFakeAlarmHandler() {
+  logElt.innerHTML('successfulFakeAlarmHandler');
+}
+
 function socketAuthentication() {
   socket = io(`${API_HOST}?userType=DRIVER_SOCKET_TYPE`);
   socket.on('DRIVER_AUTH_SUCCESS_EVENT', () => {
@@ -91,6 +95,7 @@ function socketAuthentication() {
   socket.on('UNAUTHORIZED_MISSION_COMPLETION_EVENT', () => console.log('UNAUTHORIZED_MISSION_COMPLETION_EVENT'));
 
   socket.on('CITIZEN_FEEDBACK_EVENT', newFeeedbackHandler);
+  socket.on('SUCCESSFUL_FAKE_ALARM_DECLARATION_EVENT', successfulFakeAlarmHandler);
 
   socket.on('connect', () => {
     logElt.innerHTML = 'Socket connected';
@@ -101,7 +106,9 @@ function socketAuthentication() {
 function changePosition() {
   intervalID = setInterval(() => {
     if (currentPositionIndex === staticPosition.length) {
-      return clearInterval(intervalID);
+      // clearInterval(intervalID);
+      currentPositionIndex = 0;
+      return;
     }
     const message = {
       latitude: staticPosition[currentPositionIndex].latitude,
@@ -119,6 +126,11 @@ function changePosition() {
 function missionAccomplished() {
   newAlarmDiv.className = 'hidden';
   socket.emit('MISSION_ACCOMPLISHED_EVENT', { alarm_id: currentAlarmID });
+}
+
+function fakeAlarm() {
+  newAlarmDiv.className = 'hidden';
+  socket.emit('FAKE_ALARM_EVENT', { alarm_id: currentAlarmID });
 }
 
 // function login() {
