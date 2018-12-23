@@ -1,4 +1,5 @@
-const API_HOST = 'http://localhost:9090';
+// const API_HOST = 'http://localhost:9090';
+const API_HOST = 'http://pico.ossrv.nl:9090';
 const logElt = document.getElementById('log');
 const longitudeElt = document.getElementById('longitude');
 const latitudeElt = document.getElementById('latitude');
@@ -19,8 +20,8 @@ for (const key of driverInfoKeys) {
 
 let socket;
 
-const token = 'JWT eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJfaWQiOiI1YzEyM2Y1MGE0MjNiMDI0ZTg5ZGJjMDciLCJpYXQiOjE1NDQ4MTYxMzJ9.znGzy44xdHaMfwkbMfE4vSY5lCzgAb_o-_RMEsq1bWQ';
-const ambulanceId = '5bf54f597f47c57269b73f1e';
+const token = 'JWT eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJfaWQiOiI1YzFmODk5ODQxNzFiZjM3MTAwMWQzM2MiLCJpYXQiOjE1NDU1NzA3MjF9.YFZ2JLHUBiDv7tNcFhpH1u8aBZ0_t8yoRfLdKa4vyPU';
+const ambulanceId = '5bf54f597f47c57269b73f1c';
 
 function sendAlarm() {
   const data = JSON.stringify({
@@ -39,6 +40,8 @@ function sendAlarm() {
     })
     .then(response => response.json())
     .then((responseJSON) => {
+      console.log(responseJSON);
+
       if (!responseJSON.success) { logElt.innerHTML = responseJSON.msg; return; }
 
       driverInfosDiv.className = 'visible';

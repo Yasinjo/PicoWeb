@@ -1,4 +1,5 @@
-const API_HOST = 'http://localhost:9090';
+// const API_HOST = 'http://localhost:9090';
+const API_HOST = 'http://pico.ossrv.nl:9090';
 const logElt = document.getElementById('log');
 const longitudeElt = document.getElementById('longitude');
 const latitudeElt = document.getElementById('latitude');
@@ -17,7 +18,7 @@ const feedbackComment = document.getElementById('feedback_comment');
 let currentAlarmID;
 let socket;
 
-const token = 'JWT eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJfaWQiOiI1YzEyM2QzZmU0ZDkyNTA5ODgyYzI4NWIiLCJpYXQiOjE1NDQ5OTIwMDl9.Wybm5LiS28l9PzSrvxwNv7uTJbTkO6u98UlGw1sAYX0';
+const token = 'JWT eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJfaWQiOiI1YzFmOGE1MzQxNzFiZjM3MTAwMWQzNDAiLCJpYXQiOjE1NDU1NzExMjd9.xJ15afIYLIznDY_vgTbvBPVcviu5SjlDDhsNKuXKzA8';
 
 function newFeeedbackHandler(data) {
   newFeedback.className = 'visible';
