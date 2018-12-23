@@ -8,6 +8,9 @@ const express = require('express');
 const mongoose = require('mongoose');
 const passport = require('passport');
 const http = require('http');
+const appRoot = require('app-root-path');
+const path = require('path');
+
 const citizensRoutes = require('./routes/citizens/index');
 const hospitalsRoutes = require('./routes/hospitals/index');
 const alarmsRoutes = require('./routes/alarms/index');
@@ -51,6 +54,10 @@ app.use((req, res, next) => {
 
 // Initialize the API entering point
 app.use('/api', apiRouter);
+
+// Test pages path
+const productionTestsPath = path.resolve(appRoot.toString(), 'Test', 'Production_tests');
+app.use('/tests', express.static(productionTestsPath));
 
 // Add the authentication module
 app.use(passport.initialize());
