@@ -7,6 +7,8 @@
 // Import the required modules
 const Ambulance = require('../bo/ambulance.bo');
 const Driver = require('../bo/driver.bo');
+const Citizen = require('../bo/citizen.bo');
+const Alarm = require('../bo/alarm.bo');
 
 /*
     * @function
@@ -79,6 +81,20 @@ const findAmbulanceDriver = ambulanceId => new Promise((resolve, reject) => {
   });
 });
 
+function deactivateCitizenAccount(citizenId, callback) {
+  updateFields(Citizen, { _id: citizenId }, { active: false }, callback);
+}
+
+function saveAlarmAsFalse(alarmId, driverId) {
+  updateFields(Alarm, { _id: alarmId }, { isFake: true, responsible_driver_id: driverId },
+    (err) => {
+      if (err) {
+        console.log('saveAlarmAsFalse error :');
+        console.log(err);
+      }
+    });
+}
+
 // Export the module
 module.exports = {
   save,
@@ -86,5 +102,7 @@ module.exports = {
   findOne,
   updateFields,
   findAvailableAmbulancesByHospital,
-  findAmbulanceDriver
+  findAmbulanceDriver,
+  deactivateCitizenAccount,
+  saveAlarmAsFalse
 };
