@@ -31,11 +31,14 @@ const router = express.Router();
       - 201 :
         {
           success : <boolean>,
-          driver_id : <string>,
-          driver_full_name : <string>,
-          ambulance_registration_number : <string>,
-          ambulance_longitude : <number>,
-          ambulance_latitude : <number>
+          driver :
+          {
+            driver_id : <string>,
+            driver_full_name : <string>,
+            ambulance_registration_number : <string>,
+            driver_longitude : <number>,
+            driver_latitude : <number>
+          }
         }
 */
 
