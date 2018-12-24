@@ -1,5 +1,5 @@
-const API_HOST = 'http://localhost:9090';
-// const API_HOST = 'http://pico.ossrv.nl:9090';
+// const API_HOST = 'http://localhost:9090';
+const API_HOST = 'http://pico.ossrv.nl:9090';
 const logElt = document.getElementById('log');
 const longitudeElt = document.getElementById('longitude');
 const latitudeElt = document.getElementById('latitude');
@@ -9,8 +9,9 @@ const alarmIdFeedback = document.getElementById('alarm_id_feedback');
 const feedbackPanel = document.getElementById('feedbackPanel');
 const commentField = document.getElementById('comment');
 const percentageField = document.getElementById('percentage');
+const myPositionDiv = document.getElementById('my_position');
 
-const driverInfoKeys = ['driver_id', 'driver_full_name', 'ambulance_registration_number', 'ambulance_longitude', 'ambulance_latitude'];
+const driverInfoKeys = ['driver_id', 'driver_full_name', 'ambulance_registration_number', 'driver_longitude', 'driver_latitude'];
 const driverInfo = {};
 let currentAlarmID;
 
@@ -46,7 +47,7 @@ function sendAlarm() {
 
       driverInfosDiv.className = 'visible';
       for (const key in driverInfo) {
-        driverInfo[key].innerHTML = responseJSON[key];
+        driverInfo[key].innerHTML = responseJSON.driver[key];
       }
     });
 }
@@ -58,6 +59,12 @@ function missionAccomplishedHandler(data) {
   feedbackPanel.className = 'visible';
 }
 
+function accountDesactivatedHandler(data) {
+  driverInfosDiv.className = 'hidden';
+  myPositionDiv.className = 'hidden';
+  logElt.innerHTML = `<h2>Account deactivated by id : ${data.driver_id} | name : ${data.driver_full_name}</h2>`;
+}
+
 function socketAuthentication() {
   socket = io(`${API_HOST}?userType=CITIZEN_SOCKET_TYPE`);
   socket.on('CITIZEN_AUTH_SUCCESS_EVENT', () => {
@@ -66,14 +73,15 @@ function socketAuthentication() {
   });
 
   socket.on('AMBULANCE_POSITION_CHANGE_EVENT', (data) => {
-    driverInfo.ambulance_latitude.innerHTML = data.latitude;
-    driverInfo.ambulance_longitude.innerHTML = data.longitude;
+    driverInfo.driver_latitude.innerHTML = data.latitude;
+    driverInfo.driver_longitude.innerHTML = data.longitude;
   });
 
   socket.on('MISSION_ACCOMPLISHED_EVENT', missionAccomplishedHandler);
 
   socket.on('ALARM_NOT_FOUND_EVENT', () => console.log('ALARM_NOT_FOUND_EVENT'));
   socket.on('UNAUTHORIZED_FEEDBACK_EVENT', () => console.log('UNAUTHORIZED_FEEDBACK_EVENT'));
+  socket.on('ACCOUNT_DEACTIVATED_EVENT', accountDesactivatedHandler);
 
   socket.on('connect', () => {
     logElt.innerHTML = 'Socket connected';
@@ -92,7 +100,7 @@ function changePosition() {
     latitudeElt.value = message.latitude;
 
     socket.emit('POSITION_CHANGE_EVENT', message);
-  }, 1000);
+  }, 2000);
 }
 
 function sendFeedback() {

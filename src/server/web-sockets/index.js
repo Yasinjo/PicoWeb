@@ -124,12 +124,24 @@ function socketPositionChange(socket, BOSchema) {
   });
 }
 
+function makeAmbulanceAvailable(ambulanceId) {
+  GenericDAO.updateFields(Ambulance, { _id: ambulanceId }, { available: true }, (err) => {
+    if (err) {
+      console.log('makeAmbulanceAvailable error :');
+      console.log(err);
+    }
+  });
+}
+
 function socketDisconnect(socket, BOSchema) {
   socket.on('disconnect', () => {
     GenericDAO.findOne(BOSchema, { _id: socket.userId }, (err, businessObject) => {
       if (err || !businessObject) {
         return;
       }
+      if (socket.ambulanceId) { makeAmbulanceAvailable(socket.ambulanceId); }
+
+      // send disconnetion to the other side
 
       GenericDAO.updateFields(PhoneAccount, { _id: businessObject.phone_account_id },
         { socketId: null }, (error) => {
@@ -154,13 +166,12 @@ function getSocketByBOId(BusinessSchema, userId) {
   });
 }
 
-
 function joinRoom(BusinessSchema, userId, roomName, socketType) {
   return new Promise((resolve, reject) => {
     getSocketByBOId(BusinessSchema, userId)
       .then((socket) => {
         socket.join(roomName);
-        resolve();
+        resolve(socket);
       })
       .catch(err => reject({ socketType, err }));
   });
@@ -188,15 +199,6 @@ function verifyDriverResponseToAlarmData(socket, data) {
           });
       });
     });
-  });
-}
-
-function makeAmbulanceAvailable(ambulanceId) {
-  GenericDAO.updateFields(Ambulance, { _id: ambulanceId }, { available: true }, (err) => {
-    if (err) {
-      console.log('makeAmbulanceAvailable error :');
-      console.log(err);
-    }
   });
 }
 

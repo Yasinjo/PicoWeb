@@ -1,5 +1,5 @@
-const API_HOST = 'http://localhost:9090';
-// const API_HOST = 'http://pico.ossrv.nl:9090';
+// const API_HOST = 'http://localhost:9090';
+const API_HOST = 'http://pico.ossrv.nl:9090';
 const logElt = document.getElementById('log');
 const longitudeElt = document.getElementById('longitude');
 const latitudeElt = document.getElementById('latitude');
@@ -65,7 +65,8 @@ function newFeeedbackHandler(data) {
 }
 
 function successfulFakeAlarmHandler() {
-  logElt.innerHTML('successfulFakeAlarmHandler');
+  logElt.innerHTML = 'successfulFakeAlarmHandler';
+  newAlarmDiv.className = 'hidden';
 }
 
 function socketAuthentication() {
@@ -120,7 +121,7 @@ function changePosition() {
 
     currentPositionIndex += 1;
     socket.emit('POSITION_CHANGE_EVENT', message);
-  }, 3000);
+  }, 2000);
 }
 
 function missionAccomplished() {
@@ -128,7 +129,7 @@ function missionAccomplished() {
   socket.emit('MISSION_ACCOMPLISHED_EVENT', { alarm_id: currentAlarmID });
 }
 
-function fakeAlarm() {
+function declareFakeAlarm() {
   newAlarmDiv.className = 'hidden';
   socket.emit('FAKE_ALARM_EVENT', { alarm_id: currentAlarmID });
 }

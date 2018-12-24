@@ -90,9 +90,21 @@ function linkCitizenToAmbulance(ambulanceId, citizenId, alarmId) {
         return joinRoom(Citizen, citizenId,
           positionChangeRoomName(DRIVER_SOCKET_TYPE, driverId), DRIVER_SOCKET_TYPE);
       })
-      .then(() => joinRoom(Driver, driverId,
-        positionChangeRoomName(CITIZEN_SOCKET_TYPE, citizenId), CITIZEN_SOCKET_TYPE))
-      .then(() => notifyDriver(driverId, citizenId, alarmId))
+      .then((citizenSocket) => {
+        if (citizenSocket) {
+          citizenSocket.alarmId = alarmId;
+          citizenSocket.ambulanceId = ambulanceId;
+        }
+        return joinRoom(Driver, driverId,
+          positionChangeRoomName(CITIZEN_SOCKET_TYPE, citizenId), CITIZEN_SOCKET_TYPE);
+      })
+      .then((driverSocket) => {
+        if (driverSocket) {
+          driverSocket.alarmId = alarmId;
+          driverSocket.ambulanceId = ambulanceId;
+        }
+        return notifyDriver(driverId, citizenId, alarmId);
+      })
       .then(() => resolve())
       .catch(err => reject(err));
   });
@@ -113,11 +125,13 @@ function prepareAlarmDataResponse(citizenId, ambulance) {
       .then(driver => findPhoneAccountFromUserId(Driver, driver._id))
       .then(({ businessObject, phoneAccount }) => {
         const response = {
-          driver_id: businessObject._id,
-          driver_full_name: businessObject.full_name,
-          ambulance_registration_number: ambulance.registration_number,
-          ambulance_longitude: phoneAccount.longitude,
-          ambulance_latitude: phoneAccount.latitude
+          driver: {
+            driver_id: businessObject._id,
+            driver_full_name: businessObject.full_name,
+            ambulance_registration_number: ambulance.registration_number,
+            driver_longitude: phoneAccount.longitude,
+            driver_latitude: phoneAccount.latitude
+          }
         };
 
         return resolve(response);

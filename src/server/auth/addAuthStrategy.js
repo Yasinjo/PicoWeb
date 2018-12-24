@@ -29,8 +29,10 @@ function addAuthStrategy(authManager, businessSchema, strategyName, verifyActiva
   // Create the strategy using the options abovr
   const strategy = new JwtStrategy(opts, (jwtPayload, done) => {
     // To verify a token, we should find an existing item with the same id in the token
-    GenericDAO.findOne(businessSchema, { id: jwtPayload.id }, (err, businessObject) => {
+    GenericDAO.findOne(businessSchema, { _id: jwtPayload._id }, (err, businessObject) => {
       if (err || !businessObject) { return done(err, false); }
+      console.log(`businessObject.id : ${jwtPayload._id} , ${businessObject._id} `);
+      console.log(businessObject);
       return (verifyActivation) ? done(null, businessObject.isActive()) : done(null, true);
     });
   });

@@ -13,7 +13,7 @@ function savePhoneAccount(accountData, type) {
 function findPhoneAccountFromUserId(BOSchema, id) {
   return new Promise((resolve, reject) => {
     GenericDAO.findOne(BOSchema, { _id: id }, (err, businessObject) => {
-      if (err || businessObject === null) { reject(err); }
+      if (err || !businessObject) { return reject(err); }
       GenericDAO.findOne(PhoneAccount, { _id: businessObject.phone_account_id },
         (err2, phoneAccount) => {
           if (err2 || !phoneAccount) reject(err);
