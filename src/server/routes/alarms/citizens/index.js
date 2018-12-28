@@ -50,15 +50,18 @@ router.post('/', passport.authenticate(CITIZEN_AUTH_STRATEGY_NAME, { session: fa
     let alarm = null;
     checkAmbulanceAvailabilty(request, response)
       .then((ambulanceParam) => {
+        console.log('1');
         ambulance = ambulanceParam;
         const token = getToken(request.headers);
         return extractUserIdFromToken(token);
       })
       .then((userId) => {
         citizenId = userId;
+        console.log('2');
         return createAlarm(ambulance._id, userId);
       })
       .then((alarmParam) => {
+        console.log('3');
         alarm = alarmParam;
         addCitizenInWaitingQueue(citizenId, ambulance._id)
           .catch((err) => {
@@ -68,7 +71,10 @@ router.post('/', passport.authenticate(CITIZEN_AUTH_STRATEGY_NAME, { session: fa
 
         return GenericDAO.findAmbulanceDriver(ambulance._id);
       })
-      .then(driver => notifyDriver(driver._id, citizenId, alarm._id))
+      .then((driver) => {
+        console.log('4');
+        return notifyDriver(driver._id, citizenId, alarm._id);
+      })
       .then(() => response.status(201).send({ success: true, alarm_id: alarm._id }))
       .catch((err) => {
         console.log('Router error :');

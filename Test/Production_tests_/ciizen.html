@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html>
+  <header>
+    <link rel="stylesheet" type="text/css" href="css/style.css" />
+  </header>
+  <body>
+    <div id="login_div">
+      <table>
+        <tr>
+          <td>Phone number</td>
+          <td><input type="text" id="phone_number" /></td>
+        </tr>
+
+        <tr>
+          <td>Password</td>
+          <td><input type="password" id="pswd" /></td>
+        </tr>
+        <tr>
+          <td colspan="2"><button onclick="login();">Login</button></td>
+        </tr>
+        <tr>
+          <td colspan="2" class="error" id="login_error"></td>
+        </tr>
+      </table>
+    </div>
+
+    <div id="hospitals_div" class="hidden">
+      <table border="2" id="hospitals_table">
+        <thead>
+          <tr>
+            <th>Hospital name</th>
+            <th>Hospital longitude</th>
+            <th>Hospital latitude</th>
+            <th>Select</th>
+          </tr>
+        </thead>
+        <tbody></tbody>
+      </table>
+    </div>
+
+    <div id="ambulances_div" class="hidden">
+      <table border="2" id="ambulances_table">
+        <thead>
+          <tr>
+            <th>Registration number</th>
+            <th>Ambulance longitude</th>
+            <th>Ambulance latitude</th>
+            <th>Select</th>
+          </tr>
+        </thead>
+        <tbody></tbody>
+      </table>
+    </div>
+
+    <div id="label_div" class="hidden">Waiting for something</div>
+
+    <div id="driver_info_div" class="hidden">
+      <table>
+        <tr>
+          <td rowspan="3">
+            <img
+              id="driver_image"
+              width="300px"
+              src="http://localhost:9090/api/drivers/image/5c123c80e4d92509882c2857.jpg"
+            />
+          </td>
+          <td>
+            <label><b>Driver name :</b></label> <label id="driver_name"></label>
+          </td>
+        </tr>
+
+        <tr>
+          <td>
+            <label><b>Driver latitude :</b></label>
+            <label id="driver_latitude"></label>
+          </td>
+        </tr>
+
+        <tr>
+          <td>
+            <label><b>Driver longitude :</b></label>
+            <label id="driver_longitude"></label>
+          </td>
+        </tr>
+      </table>
+    </div>
+
+    <div id="select_other_ambulance_div" class="hidden">
+      <label>My label</label>
+      <button onclick="selectOtherAmbulance();">
+        Select another ambulance
+      </button>
+    </div>
+
+    <div id="mission_accomplished_div" class="hidden">
+      The mission is accomplished <br />
+      <br />
+      <button onclick="selectOtherAmbulance();">
+        Select another ambulance
+      </button>
+      <br />
+      <br />
+      <button onclick="addFeedback();">Add a feedback</button>
+    </div>
+
+    <div id="feedback_div" class="hidden">
+      <table>
+        <tr>
+          <td>Percentage</td>
+          <td>
+            <select id="feedback_percentage">
+              <option value="0.6">0%</option>
+              <option value="0.6">20%</option>
+              <option value="0.6">40%</option>
+              <option value="0.6">60%</option>
+              <option value="0.6">80%</option>
+              <option value="0.6">100%</option>
+            </select>
+          </td>
+        </tr>
+
+        <tr>
+          <td>Add comment</td>
+          <td><textarea id="feedback_comment"></textarea></td>
+        </tr>
+        <tr>
+          <td colspan="2">
+            <button onclick="sendFeedbackAndBackToHospitalsList()">
+              Send feedback and back to ambulance page
+            </button>
+          </td>
+        </tr>
+      </table>
+    </div>
+  </body>
+
+  <script src="js/citizen/socket.io.js"></script>
+  <script src="js/citizen/citizen.js"></script>
+</html>
