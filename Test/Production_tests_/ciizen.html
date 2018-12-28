@@ -45,6 +45,7 @@
             <th>Registration number</th>
             <th>Ambulance longitude</th>
             <th>Ambulance latitude</th>
+            <th>Ambulance image</th>
             <th>Select</th>
           </tr>
         </thead>
@@ -57,13 +58,7 @@
     <div id="driver_info_div" class="hidden">
       <table>
         <tr>
-          <td rowspan="3">
-            <img
-              id="driver_image"
-              width="300px"
-              src="http://localhost:9090/api/drivers/image/5c123c80e4d92509882c2857.jpg"
-            />
-          </td>
+          <td rowspan="3" id="driver_image"></td>
           <td>
             <label><b>Driver name :</b></label> <label id="driver_name"></label>
           </td>
@@ -131,6 +126,11 @@
           </td>
         </tr>
       </table>
+    </div>
+
+    <div id="current_position_div" class="hidden">
+      <b>Current longitude :</b> <label id="longitude"></label> <br /><br />
+      <b>Current latitude :</b> <label id="latitude"></label>
     </div>
   </body>
 

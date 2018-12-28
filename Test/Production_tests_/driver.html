@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html>
+  <header>
+    <link rel="stylesheet" type="text/css" href="css/style.css" />
+  </header>
+  <body>
+    <div id="login_div">
+      <table>
+        <tr>
+          <td>Phone number</td>
+          <td><input type="text" id="phone_number" /></td>
+        </tr>
+
+        <tr>
+          <td>Password</td>
+          <td><input type="password" id="pswd" /></td>
+        </tr>
+        <tr>
+          <td colspan="2"><button onclick="login();">Login</button></td>
+        </tr>
+        <tr>
+          <td colspan="2" class="error" id="login_error"></td>
+        </tr>
+      </table>
+    </div>
+
+    <div id="alarms_div" class="hidden">
+      <table border="2" id="alarms_table">
+        <thead>
+          <tr>
+            <th>Citizen picture</th>
+            <th>Citizen name</th>
+            <th>Citizen latitude</th>
+            <th>Citizen longitude</th>
+            <th>Approve</th>
+            <th>Reject</th>
+          </tr>
+        </thead>
+        <tbody></tbody>
+      </table>
+    </div>
+
+    <div id="citizen_info_div" class="hidden">
+      <table>
+        <tr>
+          <td rowspan="3" id="citizen_image"></td>
+          <td>
+            <label><b>Citizen name :</b></label>
+            <label id="citizen_name"></label>
+          </td>
+        </tr>
+
+        <tr>
+          <td>
+            <label><b>Citizen latitude :</b></label>
+            <label id="citizen_latitude"></label>
+          </td>
+        </tr>
+
+        <tr>
+          <td>
+            <label><b>Citizen longitude :</b></label>
+            <label id="citizen_longitude"></label>
+          </td>
+        </tr>
+
+        <tr>
+          <td>
+            <button onclick="missionAccomplished();">
+              Mission accomplished
+            </button>
+          </td>
+
+          <td><button onclick="fakeAlarm();">Fake alarm</button></td>
+        </tr>
+      </table>
+    </div>
+
+    <div id="feedback_div" class="hidden">
+      <table id="feedback_table" border="2">
+        <thead>
+          <tr>
+            <th>Citizen picture</th>
+            <th>Citizen name</th>
+            <th>Feedback percentage</th>
+            <th>Feedback comment</th>
+          </tr>
+        </thead>
+        <tbody></tbody>
+      </table>
+    </div>
+
+    <div id="label_div" class="hidden">Waiting for something</div>
+
+    <div id="current_position_div" class="hidden">
+      <b>Current longitude :</b> <label id="longitude"></label> <br /><br />
+      <b>Current latitude :</b> <label id="latitude"></label>
+    </div>
+  </body>
+  <script src="js/citizen/socket.io.js"></script>
+  <script src="js/driver/driver.js"></script>
+</html>

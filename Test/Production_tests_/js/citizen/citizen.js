@@ -14,25 +14,36 @@ const hospitalsTable = byId('hospitals_table');
 const ambulancesDiv = byId('ambulances_div');
 const ambulancesTable = byId('ambulances_table');
 const labelDiv = byId('label_div');
+const currentPositionDiv = byId('current_position_div');
+const longitudeElt = byId('longitude');
+const latitudeElt = byId('latitude');
 
 let tokenVar = localStorage.getItem('token');
 let socket;
+let currentAlarmId;
 
 function sendAlarm(ambulanceId) {
   labelDiv.className = 'visible';
   labelDiv.innerHTML = '<b>Sending alarm</b>';
+  const data = JSON.stringify({
+    ambulance_id: ambulanceId
+  });
+
   fetch(`${API_HOST}/api/alarms/citizens`,
     {
       method: 'POST',
       headers: {
-        Authorization: token,
+        Authorization: tokenVar,
         'Content-Type': 'application/json'
       },
       body: data
     })
     .then(response => response.json())
     .then((responseJSON) => {
-      console.log(responseJSON);
+      if (responseJSON.success) {
+        currentAlarmId = responseJSON.alarm_id;
+        labelDiv.innerHTML = '<b>Waiting for driver approval</b>';
+      } else console.log(responseJSON);
     });
 }
 
@@ -47,17 +58,27 @@ function createAmbulanceSelectionButton(ambulanceId) {
   return btn;
 }
 
+function createAmbulanceImage(ambulanceId) {
+  const img = document.createElement('IMG');
+  img.setAttribute('src', `http://localhost:9090/api/ambulances/image/${ambulanceId}.jpg`);
+  img.setAttribute('width', '300');
+  return img;
+}
+
 function addAmbulanceRow(row, ambulance) {
   const registrationNumber = row.insertCell(0);
   const latitude = row.insertCell(1);
   const longitude = row.insertCell(2);
-  const select = row.insertCell(3);
+  const image = row.insertCell(3);
+  const select = row.insertCell(4);
 
   registrationNumber.innerHTML = ambulance.registration_number;
   longitude.innerHTML = ambulance.longitude;
   latitude.innerHTML = ambulance.latitude;
 
   const selectButton = createAmbulanceSelectionButton(ambulance._id);
+  const ambulanceImage = createAmbulanceImage(ambulance._id);
+  image.appendChild(ambulanceImage);
   select.appendChild(selectButton);
 }
 
@@ -137,9 +158,27 @@ function mainHospitals() {
     });
 }
 
+function initPositionTimer() {
+  currentPositionDiv.className = 'visible';
+  setInterval(() => {
+    const message = {
+      longitude: Math.random() * 100000,
+      latitude: Math.random() * 100000
+    };
+
+    longitudeElt.innerHTML = message.longitude;
+    latitudeElt.innerHTML = message.latitude;
+
+    socket.emit('POSITION_CHANGE_EVENT', message);
+  }, 2000);
+}
+
 function initSocket() {
   socket = io(`${API_HOST}?userType=CITIZEN_SOCKET_TYPE`);
-  socket.on('CITIZEN_AUTH_SUCCESS_EVENT', () => mainHospitals());
+  socket.on('CITIZEN_AUTH_SUCCESS_EVENT', () => {
+    initPositionTimer();
+    mainHospitals();
+  });
   socket.on('connect', () => {
     socket.emit('CITIZEN_AUNTENTICATION_EVENT', { token: tokenVar });
   });

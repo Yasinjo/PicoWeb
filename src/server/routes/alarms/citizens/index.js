@@ -73,9 +73,10 @@ router.post('/', passport.authenticate(CITIZEN_AUTH_STRATEGY_NAME, { session: fa
       })
       .then((driver) => {
         console.log('4');
-        return notifyDriver(driver._id, citizenId, alarm._id);
+        notifyDriver(driver._id, citizenId, alarm._id)
+          .catch(err => console.log(`NotifyDriver error : ${err}`));
+        response.status(201).send({ success: true, alarm_id: alarm._id });
       })
-      .then(() => response.status(201).send({ success: true, alarm_id: alarm._id }))
       .catch((err) => {
         console.log('Router error :');
         console.log(err);
