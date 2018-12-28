@@ -10,7 +10,7 @@ const Ambulance = require('../../../bo/ambulance.bo');
 const Hospital = require('../../../bo/hospital.bo');
 const { uploadPictureHelper } = require('../../../helpers/uploadPictureHelper');
 
-const HOSPITAL_NOT_FOUND = 'Hôspital not found';
+const HOSPITAL_NOT_FOUND = 'Hospital not found';
 const AMBULANCES_REPO_NAME = 'AMBULANCES_REPO_NAME';
 
 /*
@@ -37,27 +37,26 @@ const AMBULANCES_REPO_NAME = 'AMBULANCES_REPO_NAME';
 */
 function saveAmbulance(request, response, dataKeys) {
   const ambulance = new Ambulance(_.pick(request.body, dataKeys));
-  const save = () => {
-    GenericDAO.save(ambulance)
-      .then(() => {
-        // Upload the image file (if there is an image), and send the response
-        if (request.file && request.file.buffer) {
-          uploadPictureHelper(request.file.buffer, ambulance._id, AMBULANCES_REPO_NAME,
-            () => response.status(201).json({ success: true, ambulance_id: ambulance._id }));
-        } else { response.status(201).json({ success: true, ambulance_id: ambulance._id }); }
-      })
-      .catch(error => response.status(500).send({ success: false, error }));
-  };
-  // Check if the hospital exists
-  if (request.body.hospital_id) {
-    GenericDAO.findOne(Hospital, { _id: request.body.hospital_id }, (error, hospital) => {
-      if (error || !hospital) {
-        return response.status(400).send({ success: false, error: HOSPITAL_NOT_FOUND });
-      }
+  GenericDAO.save(ambulance)
+    .then(() => {
+      // Upload the image file (if there is an image), and send the response
+      if (request.file && request.file.buffer) {
+        uploadPictureHelper(request.file.buffer, ambulance._id, AMBULANCES_REPO_NAME,
+          () => response.status(201).json({ success: true, ambulance_id: ambulance._id }));
+      } else { response.status(201).json({ success: true, ambulance_id: ambulance._id }); }
+    })
+    .catch(error => response.status(500).send({ success: false, error }));
 
-      return save();
-    });
-  } else save();
+  // Check if the hospital exists
+  // if (request.body.hospital_id) {
+  //   GenericDAO.findOne(Hospital, { _id: request.body.hospital_id }, (error, hospital) => {
+  //     if (error || !hospital) {
+  //       return response.status(400).send({ success: false, error: HOSPITAL_NOT_FOUND });
+  //     }
+
+  //     return save();
+  //   });
+  // } else save();
 }
 
 module.exports = {

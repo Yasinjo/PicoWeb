@@ -5,8 +5,9 @@ const Driver = require('../../../bo/driver.bo');
 const Citizen = require('../../../bo/citizen.bo');
 const { findPhoneAccountFromUserId } = require('../../../helpers/phoneAccountHelpers');
 const {
-  joinRoom, sendMessageToBO, positionChangeRoomName,
-  DRIVER_SOCKET_TYPE, CITIZEN_SOCKET_TYPE, NEW_ALARM_EVENT
+  joinRoom, sendMessageToBO, ambulanceWaitingQueueRoomName, linkCitizenAndDriverSockets,
+  leaveAlarmWaitingQueue, broadcastDriverSelection, RemoveAmbulanceWaitingQueue,
+  CITIZEN_SOCKET_TYPE, NEW_ALARM_EVENT, ACCEPTED_REQUEST_EVENT, REJECTED_REQUEST_EVENT
 } = require('../../../web-sockets/index');
 
 const AMBULANCE_NOT_FOUND = 'Ambulance not found';
@@ -46,15 +47,10 @@ function checkSocketID(request, response) {
 }
 */
 
-function reserveAmbulance(ambulanceId, citizenId) {
+function createAlarm(ambulanceId, citizenId) {
   return new Promise((resolve, reject) => {
     const alarm = new Alarm({ ambulance_id: ambulanceId, citizen_id: citizenId });
-    GenericDAO.save(alarm).then(() => {
-      GenericDAO.updateFields(Ambulance, { _id: ambulanceId }, { available: false }, (err) => {
-        if (err) return reject(err);
-        return resolve(alarm);
-      });
-    }).catch(error => reject(error));
+    GenericDAO.save(alarm).then(() => resolve(alarm)).catch(error => reject(error));
   });
 }
 
@@ -81,33 +77,60 @@ function notifyDriver(driverId, citizenId, alarmId) {
   });
 }
 
-function linkCitizenToAmbulance(ambulanceId, citizenId, alarmId) {
-  return new Promise((resolve, reject) => {
-    let driverId = null;
-    GenericDAO.findAmbulanceDriver(ambulanceId)
-      .then((driver) => {
-        driverId = driver._id;
-        return joinRoom(Citizen, citizenId,
-          positionChangeRoomName(DRIVER_SOCKET_TYPE, driverId), DRIVER_SOCKET_TYPE);
-      })
-      .then((citizenSocket) => {
-        if (citizenSocket) {
-          citizenSocket.alarmId = alarmId;
-          citizenSocket.ambulanceId = ambulanceId;
-        }
-        return joinRoom(Driver, driverId,
-          positionChangeRoomName(CITIZEN_SOCKET_TYPE, citizenId), CITIZEN_SOCKET_TYPE);
-      })
-      .then((driverSocket) => {
-        if (driverSocket) {
-          driverSocket.alarmId = alarmId;
-          driverSocket.ambulanceId = ambulanceId;
-        }
-        return notifyDriver(driverId, citizenId, alarmId);
-      })
-      .then(() => resolve())
-      .catch(err => reject(err));
+function addCitizenInWaitingQueue(citizenId, ambulanceId) {
+  return joinRoom(Citizen, citizenId,
+    ambulanceWaitingQueueRoomName(ambulanceId), CITIZEN_SOCKET_TYPE);
+}
+
+function changeAmbulanceAvailablity(ambulanceId, availability) {
+  GenericDAO.updateFields(Ambulance, { _id: ambulanceId }, { available: availability }, (err) => {
+    if (err) {
+      console.log('changeAmbulanceAvailablity error :');
+      console.log(err);
+    }
   });
+}
+
+function changeAlarmAcceptanceState(alarmId, acceptanceState) {
+  GenericDAO.updateFields(Alarm, { _id: alarmId }, { accepted: acceptanceState }, (err) => {
+    if (err) {
+      console.log('changeAlarmAcceptanceState error :');
+      console.log(err);
+    }
+  });
+}
+
+function sendDriverDetailsToCitizen(citizenSocket, driverId) {
+  GenericDAO.findPhoneAccountFromUserId(Driver, driverId)
+    .then(({ businessObject, phoneAccount }) => {
+      const message = {
+        driver_id: driverId,
+        driver_full_name: businessObject.full_name,
+        driver_longitude: phoneAccount.longitude,
+        driver_latitude: phoneAccount.latitude
+      };
+
+      citizenSocket.emit(ACCEPTED_REQUEST_EVENT, message);
+    });
+}
+
+function sendRejectionToCitizen(citizenSocket, alarmId) {
+  citizenSocket.emit(REJECTED_REQUEST_EVENT, { alarm_id: alarmId });
+}
+
+function acceptAlarmRequest(driverSocket, citizenSocket, alarm) {
+  changeAmbulanceAvailablity(alarm.ambulance_id, false);
+  changeAlarmAcceptanceState(alarm._id, true);
+  sendDriverDetailsToCitizen(citizenSocket, driverSocket.userId);
+  linkCitizenAndDriverSockets(citizenSocket, driverSocket, alarm._id, alarm.ambulance_id);
+  leaveAlarmWaitingQueue(citizenSocket, alarm.ambulance_id);
+  broadcastDriverSelection(alarm.ambulance_id);
+  RemoveAmbulanceWaitingQueue(alarm.ambulance_id);
+}
+
+function rejectAlarmRequest(citizenSocket, alarm) {
+  leaveAlarmWaitingQueue(citizenSocket, alarm.ambulance_id);
+  sendRejectionToCitizen(citizenSocket, alarm._id);
 }
 
 /*
@@ -119,31 +142,34 @@ function linkCitizenToAmbulance(ambulanceId, citizenId, alarmId) {
   ambulance_latitude : <number>
 }
 */
-function prepareAlarmDataResponse(citizenId, ambulance) {
-  return new Promise((resolve, reject) => {
-    GenericDAO.findAmbulanceDriver(ambulance._id)
-      .then(driver => findPhoneAccountFromUserId(Driver, driver._id))
-      .then(({ businessObject, phoneAccount }) => {
-        const response = {
-          driver: {
-            driver_id: businessObject._id,
-            driver_full_name: businessObject.full_name,
-            ambulance_registration_number: ambulance.registration_number,
-            driver_longitude: phoneAccount.longitude,
-            driver_latitude: phoneAccount.latitude
-          }
-        };
+// function prepareAlarmDataResponse(citizenId, ambulance) {
+//   return new Promise((resolve, reject) => {
+//     GenericDAO.findAmbulanceDriver(ambulance._id)
+//       .then(driver => findPhoneAccountFromUserId(Driver, driver._id))
+//       .then(({ businessObject, phoneAccount }) => {
+//         const response = {
+//           driver: {
+//             driver_id: businessObject._id,
+//             driver_full_name: businessObject.full_name,
+//             ambulance_registration_number: ambulance.registration_number,
+//             driver_longitude: phoneAccount.longitude,
+//             driver_latitude: phoneAccount.latitude
+//           }
+//         };
 
-        return resolve(response);
-      })
-      .catch(err => reject(err));
-  });
-}
+//         return resolve(response);
+//       })
+//       .catch(err => reject(err));
+//   });
+// }
 
 module.exports = {
   checkAmbulanceAvailabilty,
-  reserveAmbulance,
-  linkCitizenToAmbulance,
-  prepareAlarmDataResponse,
+  createAlarm,
+  addCitizenInWaitingQueue,
+  notifyDriver,
+  acceptAlarmRequest,
+  changeAmbulanceAvailablity,
+  rejectAlarmRequest,
   AMBULANCE_NOT_FOUND
 };

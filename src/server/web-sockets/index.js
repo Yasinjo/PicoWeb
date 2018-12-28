@@ -5,10 +5,10 @@ const GenericDAO = require('../dao/genericDAO');
 const Citizen = require('../bo/citizen.bo');
 const Driver = require('../bo/driver.bo');
 const Alarm = require('../bo/alarm.bo');
-const Ambulance = require('../bo/ambulance.bo');
 const Feedback = require('../bo/feedback.bo');
 const { PhoneAccount } = require('../bo/phone_account.bo');
 const { findPhoneAccountFromUserId } = require('../helpers/phoneAccountHelpers');
+const { acceptAlarmRequest, changeAmbulanceAvailablity, rejectAlarmRequest } = require('../routes/alarms/helpers/index');
 
 const CITIZEN_AUNTENTICATION_EVENT = 'CITIZEN_AUNTENTICATION_EVENT';
 const DRIVER_AUNTENTICATION_EVENT = 'DRIVER_AUNTENTICATION_EVENT';
@@ -32,6 +32,9 @@ const CITIZEN_POSITION_CHANGE_EVENT = 'CITIZEN_POSITION_CHANGE_EVENT';
 const FAKE_ALARM_EVENT = 'FAKE_ALARM_EVENT';
 const ACCOUNT_DEACTIVATED_EVENT = 'ACCOUNT_DEACTIVATED_EVENT';
 const SUCCESSFUL_FAKE_ALARM_DECLARATION_EVENT = 'SUCCESSFUL_FAKE_ALARM_DECLARATION_EVENT';
+const ACCEPTED_REQUEST_EVENT = 'ACCEPTED_REQUEST_EVENT';
+const OTHER_CITIZEN_SELECTION_EVENT = 'REJECTED_REQUEST_EVENT';
+const REJECTED_REQUEST_EVENT = 'REJECTED_REQUEST_EVENT';
 
 let io = null;
 
@@ -41,6 +44,8 @@ const positionChangeRoomName = (socketType, userId) => {
   const root = (socketType === DRIVER_SOCKET_TYPE) ? 'drivers' : 'citizens';
   return `/${root}/${userId}/position_change`;
 };
+
+const ambulanceWaitingQueueRoomName = ambulanceId => `/ambulances/${ambulanceId}/waiting_queue`;
 
 function updateSocket(user, socket) {
   return new Promise((resolve, reject) => {
@@ -124,22 +129,13 @@ function socketPositionChange(socket, BOSchema) {
   });
 }
 
-function makeAmbulanceAvailable(ambulanceId) {
-  GenericDAO.updateFields(Ambulance, { _id: ambulanceId }, { available: true }, (err) => {
-    if (err) {
-      console.log('makeAmbulanceAvailable error :');
-      console.log(err);
-    }
-  });
-}
-
 function socketDisconnect(socket, BOSchema) {
   socket.on('disconnect', () => {
     GenericDAO.findOne(BOSchema, { _id: socket.userId }, (err, businessObject) => {
       if (err || !businessObject) {
         return;
       }
-      if (socket.ambulanceId) { makeAmbulanceAvailable(socket.ambulanceId); }
+      if (socket.ambulanceId) { changeAmbulanceAvailablity(socket.ambulanceId, true); }
 
       // send disconnetion to the other side
 
@@ -177,6 +173,17 @@ function joinRoom(BusinessSchema, userId, roomName, socketType) {
   });
 }
 
+function linkCitizenAndDriverSockets(citizenSocket, driverSocket, alarmId, ambulanceId) {
+  citizenSocket.alarmId = alarmId;
+  citizenSocket.ambulanceId = ambulanceId;
+
+  driverSocket.alarmId = alarmId;
+  driverSocket.ambulanceId = ambulanceId;
+
+  driverSocket.join(positionChangeRoomName(CITIZEN_SOCKET_TYPE, citizenSocket.userId));
+  citizenSocket.join(positionChangeRoomName(DRIVER_SOCKET_TYPE, driverSocket.userId));
+}
+
 function verifyDriverResponseToAlarmData(socket, data) {
   return new Promise((resolve) => {
     if (!data.alarm_id) return socket.emit(ALARM_NOT_FOUND_EVENT);
@@ -190,7 +197,7 @@ function verifyDriverResponseToAlarmData(socket, data) {
           return socket.emit(UNAUTHORIZED_MISSION_COMPLETION_EVENT);
         }
 
-        getSocketByBOId(Citizen, alarm.citizen_id)
+        return getSocketByBOId(Citizen, alarm.citizen_id)
           .then(citizenSocket => resolve({ citizenSocket, alarm }))
           .catch((err3) => {
             resolve({ alarm });
@@ -203,7 +210,7 @@ function verifyDriverResponseToAlarmData(socket, data) {
 }
 
 function finishMission(citizenSocket, driverSocket, alarm) {
-  if (alarm && alarm.ambulance_id) { makeAmbulanceAvailable(alarm.ambulance_id); }
+  if (alarm && alarm.ambulance_id) { changeAmbulanceAvailablity(alarm.ambulance_id, true); }
   if (citizenSocket) {
     citizenSocket.leave(positionChangeRoomName(DRIVER_SOCKET_TYPE, driverSocket.userId));
   }
@@ -212,17 +219,6 @@ function finishMission(citizenSocket, driverSocket, alarm) {
   }
 }
 
-function missionAccomplishedHandler(driverSocket, data) {
-  if (!isSocketAuth(driverSocket)) return;
-  verifyDriverResponseToAlarmData(driverSocket, data)
-    .then(({ alarm, citizenSocket }) => {
-      finishMission(citizenSocket, driverSocket, alarm);
-      if (citizenSocket) {
-        citizenSocket.emit(MISSION_ACCOMPLISHED_EVENT,
-          { driver_id: driverSocket.userId, alarm_id: alarm._id });
-      }
-    });
-}
 
 function deactivateCitizenAccount(citizenId) {
   GenericDAO.deactivateCitizenAccount(citizenId, (err) => {
@@ -246,6 +242,18 @@ function notifyDeactivatedCitizen(citizenSocket, driverId) {
   });
 }
 
+function missionAccomplishedHandler(driverSocket, data) {
+  if (!isSocketAuth(driverSocket)) return;
+  verifyDriverResponseToAlarmData(driverSocket, data)
+    .then(({ alarm, citizenSocket }) => {
+      finishMission(citizenSocket, driverSocket, alarm);
+      if (citizenSocket) {
+        citizenSocket.emit(MISSION_ACCOMPLISHED_EVENT,
+          { driver_id: driverSocket.userId, alarm_id: alarm._id });
+      }
+    });
+}
+
 function fakeAlarmHandler(driverSocket, data) {
   if (!isSocketAuth(driverSocket)) return;
   verifyDriverResponseToAlarmData(driverSocket, data)
@@ -259,6 +267,22 @@ function fakeAlarmHandler(driverSocket, data) {
 
       GenericDAO.saveAlarmAsFalse(alarm._id, driverSocket.userId);
       driverSocket.emit(SUCCESSFUL_FAKE_ALARM_DECLARATION_EVENT);
+    });
+}
+
+function acceptedRequestHandler(driverSocket, data) {
+  if (!isSocketAuth(driverSocket)) return;
+  verifyDriverResponseToAlarmData(driverSocket, data)
+    .then(({ alarm, citizenSocket }) => {
+      acceptAlarmRequest(driverSocket, citizenSocket, alarm);
+    });
+}
+
+function rejectedRequestHandler(driverSocket, data) {
+  if (!isSocketAuth(driverSocket)) return;
+  verifyDriverResponseToAlarmData(driverSocket, data)
+    .then(({ alarm, citizenSocket }) => {
+      rejectAlarmRequest(citizenSocket, alarm);
     });
 }
 
@@ -340,6 +364,8 @@ function initDriverSocket(socket) {
   initSocket(socket, DRIVER_AUNTENTICATION_EVENT, Driver,
     DRIVER_AUTH_SUCCESS_EVENT, DRIVER_SOCKET_TYPE);
 
+  socket.on(ACCEPTED_REQUEST_EVENT, data => acceptedRequestHandler(socket, data));
+  socket.on(REJECTED_REQUEST_EVENT, data => rejectedRequestHandler(socket, data));
   socket.on(MISSION_ACCOMPLISHED_EVENT, data => missionAccomplishedHandler(socket, data));
   socket.on(FAKE_ALARM_EVENT, data => fakeAlarmHandler(socket, data));
 }
@@ -378,11 +404,32 @@ function sendMessageToBO(BusinessSchema, userId, eventName, message) {
   });
 }
 
+function leaveAlarmWaitingQueue(citizenSocket, ambulanceId) {
+  citizenSocket.leave(ambulanceId);
+}
+
+function broadcastDriverSelection(ambulanceId) {
+  io.to(ambulanceWaitingQueueRoomName(ambulanceId)).emit(OTHER_CITIZEN_SELECTION_EVENT);
+}
+
+function RemoveAmbulanceWaitingQueue(ambulanceId) {
+  const roomName = ambulanceWaitingQueueRoomName(ambulanceId);
+  io.sockets.clients(roomName).forEach((citizenSocket) => {
+    citizenSocket.leave(roomName);
+  });
+}
+
 module.exports = {
   init,
   joinRoom,
   sendMessageToBO,
   positionChangeRoomName,
+  ambulanceWaitingQueueRoomName,
+  linkCitizenAndDriverSockets,
+  leaveAlarmWaitingQueue,
+  broadcastDriverSelection,
+  RemoveAmbulanceWaitingQueue,
+  REJECTED_REQUEST_EVENT,
   CITIZEN_SOCKET_TYPE,
   DRIVER_SOCKET_TYPE,
   NEW_ALARM_EVENT

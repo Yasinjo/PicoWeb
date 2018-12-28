@@ -7,10 +7,11 @@
 const express = require('express');
 const passport = require('passport');
 const {
-  checkAmbulanceAvailabilty, reserveAmbulance, linkCitizenToAmbulance,
-  prepareAlarmDataResponse, AMBULANCE_NOT_FOUND
+  checkAmbulanceAvailabilty, createAlarm, notifyDriver,
+  addCitizenInWaitingQueue, AMBULANCE_NOT_FOUND
 } = require('../helpers/index');
 const getToken = require('../../../helpers/getToken');
+const GenericDAO = require('../../../dao/genericDAO');
 const { extractUserIdFromToken } = require('../../../auth/tokenExtractors');
 const { CITIZEN_AUTH_STRATEGY_NAME } = require('../../citizens/index');
 
@@ -46,28 +47,29 @@ router.post('/', passport.authenticate(CITIZEN_AUTH_STRATEGY_NAME, { session: fa
   (request, response) => {
     let citizenId = null;
     let ambulance = null;
+    let alarm = null;
     checkAmbulanceAvailabilty(request, response)
       .then((ambulanceParam) => {
-        console.log('1');
         ambulance = ambulanceParam;
         const token = getToken(request.headers);
         return extractUserIdFromToken(token);
       })
       .then((userId) => {
-        console.log('2');
         citizenId = userId;
-        return reserveAmbulance(request.body.ambulance_id, userId);
+        return createAlarm(ambulance._id, userId);
       })
-      .then((alarm) => {
-        console.log('3');
-        linkCitizenToAmbulance(request.body.ambulance_id, citizenId, alarm._id)
+      .then((alarmParam) => {
+        alarm = alarmParam;
+        addCitizenInWaitingQueue(citizenId, ambulance._id)
           .catch((err) => {
-            console.log('linkCitizenToAmbulance error :');
+            console.log('addCitizenInWaitingQueue error :');
             console.log(err);
           });
-        return prepareAlarmDataResponse(citizenId, ambulance);
+
+        return GenericDAO.findAmbulanceDriver(ambulance._id);
       })
-      .then(responseParam => response.status(201).send({ success: true, ...responseParam }))
+      .then(driver => notifyDriver(driver._id, citizenId, alarm._id))
+      .then(() => response.status(201).send({ success: true, alarm_id: alarm._id }))
       .catch((err) => {
         console.log('Router error :');
         console.log(err);

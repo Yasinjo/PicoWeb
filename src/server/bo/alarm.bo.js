@@ -24,6 +24,10 @@ const AlarmSchema = new Schema({
     type: Schema.Types.Date,
     default: () => Date.now()
   },
+  accepted: {
+    type: Schema.Types.Boolean,
+    default: false
+  },
   isFake: {
     type: Schema.Types.Boolean,
     default: false

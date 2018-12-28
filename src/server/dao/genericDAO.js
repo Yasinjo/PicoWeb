@@ -58,12 +58,17 @@ function find(businessSchema, params, callback) {
 */
 function findAvailableAmbulancesByHospital(hospitalId, callback) {
   // Create the query params
+  // const queryParams = {
+  //   available: true,
+  //   $or: [
+  //     { hospital_id: { $exists: false } },
+  //     { hospital_ids: hospitalId }
+  //   ]
+  // };
+
   const queryParams = {
     available: true,
-    $or: [
-      { hospital_id: { $exists: false } },
-      { hospital_id: hospitalId }
-    ]
+    hospital_ids: hospitalId
   };
 
   // Find the results

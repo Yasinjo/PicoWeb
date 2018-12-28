@@ -27,10 +27,10 @@ const AmbulanceSchema = new Schema({
     type: Schema.Types.Number,
     required: true
   },
-  hospital_id: {
+  hospital_ids: [{
     type: Schema.Types.ObjectId,
     ref: 'Hospital'
-  }
+  }]
 });
 
 // Export the module

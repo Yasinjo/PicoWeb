@@ -21,7 +21,7 @@ const router = express.Router();
         latitude : <number>{required},
         longitude : <number>{required},
         image : <image_file>{optional},
-        hospital_id : <string>{optional}
+        hospital_ids : [<string>{required}]
       }
     * @Response body :
       - 400 :
@@ -31,11 +31,11 @@ const router = express.Router();
 */
 router.post('/', uploadMiddleware.single('image'), (request, response) => {
   // Initialize the required keys
-  const requiredKeys = ['registration_number', 'latitude', 'longitude'];
+  const requiredKeys = ['registration_number', 'latitude', 'longitude', 'hospital_ids'];
   // Verify the required fields and save the ambulance
   verifyRequiredFields(request, response, requiredKeys)
     .then(() => {
-      saveAmbulance(request, response, [...requiredKeys, 'hospital_id']);
+      saveAmbulance(request, response, requiredKeys);
     });
 });
 
