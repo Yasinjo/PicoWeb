@@ -5,9 +5,10 @@
 
 // Import the required modules
 const express = require('express');
+const path = require('path');
 const verifyRequiredFields = require('../../helpers/verifyRequiredFields');
-const { saveAmbulance } = require('./helpers/index');
-const { uploadMiddleware } = require('../../helpers/uploadPictureHelper');
+const { saveAmbulance, AMBULANCES_REPO_NAME } = require('./helpers/index');
+const { uploadMiddleware, UPLOADS_PATH } = require('../../helpers/uploadPictureHelper');
 
 // Create the router
 const router = express.Router();
@@ -39,7 +40,11 @@ router.post('/', uploadMiddleware.single('image'), (request, response) => {
     });
 });
 
+// Image routing
+router.use('/image', express.static(path.join(UPLOADS_PATH, AMBULANCES_REPO_NAME)));
+
 // Export the module
 module.exports = {
-  router
+  router,
+  AMBULANCES_REPO_NAME
 };

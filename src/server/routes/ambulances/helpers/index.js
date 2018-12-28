@@ -7,11 +7,12 @@
 const _ = require('lodash');
 const GenericDAO = require('../../../dao/genericDAO');
 const Ambulance = require('../../../bo/ambulance.bo');
-const Hospital = require('../../../bo/hospital.bo');
+// const Hospital = require('../../../bo/hospital.bo');
 const { uploadPictureHelper } = require('../../../helpers/uploadPictureHelper');
 
-const HOSPITAL_NOT_FOUND = 'Hospital not found';
 const AMBULANCES_REPO_NAME = 'AMBULANCES_REPO_NAME';
+
+// const HOSPITAL_NOT_FOUND = 'Hospital not found';
 
 /*
     * @function
@@ -60,5 +61,6 @@ function saveAmbulance(request, response, dataKeys) {
 }
 
 module.exports = {
-  saveAmbulance
+  saveAmbulance,
+  AMBULANCES_REPO_NAME
 };
