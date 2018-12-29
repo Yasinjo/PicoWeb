@@ -71,7 +71,7 @@ function acceptAlarmRequest(driverSocket, citizenSocket, alarm) {
   changeAmbulanceAvailablity(alarm.ambulance_id, false);
   changeAlarmAcceptanceState(alarm._id, true);
   sendDriverDetailsToCitizen(citizenSocket, driverSocket.userId);
-  linkCitizenAndDriverSockets(citizenSocket, driverSocket, alarm._id, alarm.ambulance_id);
+  linkCitizenAndDriverSockets(citizenSocket, driverSocket);
   leaveAlarmWaitingQueue(citizenSocket, alarm.ambulance_id);
   broadcastDriverSelection(alarm.ambulance_id);
   RemoveAmbulanceWaitingQueue(alarm.ambulance_id);
@@ -112,8 +112,6 @@ function missionAccomplishedHandler(driverSocket, data) {
 }
 
 function initDriverSocket(socket) {
-  console.log('Init DRIVER_SOCKET_TYPE');
-
   initSocket(socket, DRIVER_AUNTENTICATION_EVENT, Driver,
     DRIVER_AUTH_SUCCESS_EVENT, DRIVER_SOCKET_TYPE);
 

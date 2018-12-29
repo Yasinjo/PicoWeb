@@ -102,7 +102,6 @@ function broadcastDriverSelection(ambulanceId) {
 }
 
 function initCitizenSocket(socket) {
-  console.log('Init CITIZEN_SOCKET_TYPE');
   initSocket(socket, CITIZEN_AUNTENTICATION_EVENT, Citizen,
     CITIZEN_AUTH_SUCCESS_EVENT, CITIZEN_SOCKET_TYPE);
 

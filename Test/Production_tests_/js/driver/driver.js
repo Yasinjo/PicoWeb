@@ -205,12 +205,16 @@ function removeToken() {
 function missionAccomplished() {
   if (currentAlarmId) {
     socket.emit('MISSION_ACCOMPLISHED_EVENT', { alarm_id: currentAlarmId });
+    citizenInfoDiv.className = 'hidden';
+    main();
   } else { console.error('Invalid alarm ID : missionAccomplished'); }
 }
 
 function fakeAlarm() {
   if (currentAlarmId) {
     socket.emit('FAKE_ALARM_EVENT', { alarm_id: currentAlarmId });
+    citizenInfoDiv.className = 'hidden';
+    main();
   } else { console.error('Invalid alarm ID : fakeAlarm'); }
 }
 

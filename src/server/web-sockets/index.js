@@ -68,6 +68,9 @@ function socketAuth(socket, AuthenticationEventName,
             setSocketAuth(socket, true);
             socket.userId = userId;
             socket.socketType = socketType;
+            if (socketType === DRIVER_SOCKET_TYPE) {
+              socket.ambulanceId = user.ambulance_id;
+            }
             updateSocket(user, socket)
               .then(() => socket.emit(SuccessfullAuthEventName, { success: true }))
               .catch((error) => {
@@ -201,9 +204,7 @@ function sendMessageToBO(BusinessSchema, userId, eventName, message) {
   });
 }
 
-function linkCitizenAndDriverSockets(citizenSocket, driverSocket, alarmId, ambulanceId) {
-  driverSocket.ambulanceId = ambulanceId;
-
+function linkCitizenAndDriverSockets(citizenSocket, driverSocket) {
   driverSocket.join(positionChangeRoomName(CITIZEN_SOCKET_TYPE, citizenSocket.userId));
   citizenSocket.join(positionChangeRoomName(DRIVER_SOCKET_TYPE, driverSocket.userId));
 }
@@ -235,9 +236,16 @@ function verifyDriverResponseToAlarmData(socket, data) {
 
 function RemoveAmbulanceWaitingQueue(ambulanceId) {
   const roomName = ambulanceWaitingQueueRoomName(ambulanceId);
-  io.sockets.clients(roomName).forEach((citizenSocket) => {
-    citizenSocket.leave(roomName);
-  });
+  try {
+    const usersInRoom = io.sockets.clients(roomName);
+    usersInRoom.forEach((citizenSocket) => {
+      console.log('citizenSocket :');
+      console.log(`citizenSocket.id :${citizenSocket.id} / citizenSocket.socketType : ${citizenSocket.socketType}`);
+      citizenSocket.leave(roomName);
+    });
+  } catch (err) {
+    console.log('RemoveAmbulanceWaitingQueue error :');
+  }
 }
 
 module.exports = {
