@@ -72,7 +72,7 @@ function createAmbulanceSelectionButton(ambulanceId) {
 
 function createAmbulanceImage(ambulanceId) {
   const img = document.createElement('IMG');
-  img.setAttribute('src', `http://localhost:9090/api/ambulances/image/${ambulanceId}.jpg`);
+  img.setAttribute('src', `${API_HOST}/api/ambulances/image/${ambulanceId}.jpg`);
   img.setAttribute('width', '300');
   return img;
 }
@@ -187,7 +187,7 @@ function initPositionTimer() {
 
 function createDriverImage(driverId) {
   const img = document.createElement('IMG');
-  img.setAttribute('src', `http://localhost:9090/api/drivers/image/${driverId}.jpg`);
+  img.setAttribute('src', `${API_HOST}/api/drivers/image/${driverId}.jpg`);
   img.setAttribute('width', '300');
   return img;
 }

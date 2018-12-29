@@ -50,7 +50,7 @@ function main() {
 
 function createCitizenPicture(citizenId) {
   const img = document.createElement('IMG');
-  img.setAttribute('src', `http://localhost:9090/api/citizens/image/${citizenId}.jpg`);
+  img.setAttribute('src', `${API_HOST}/api/citizens/image/${citizenId}.jpg`);
   img.setAttribute('width', '300');
   return img;
 }
