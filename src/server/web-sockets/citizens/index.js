@@ -5,8 +5,8 @@ const Citizen = require('../../bo/citizen.bo');
 const Feedback = require('../../bo/feedback.bo');
 
 const {
-  setSocketAuth, initSocket, isSocketAuth, getSocketByBOId, io,
-  ambulanceWaitingQueueRoomName
+  setSocketAuth, initSocket, isSocketAuth, getSocketByBOId,
+  ambulanceWaitingQueueRoomName, getSocketServer
 } = require('../index');
 const {
   ACCOUNT_DEACTIVATED_EVENT, ALARM_NOT_FOUND_EVENT, UNAUTHORIZED_FEEDBACK_EVENT,
@@ -93,14 +93,16 @@ function citizenFeedbackHandler(citizenSocket, data) {
 }
 
 function leaveAlarmWaitingQueue(citizenSocket, ambulanceId) {
-  citizenSocket.leave(ambulanceId);
+  citizenSocket.leave(ambulanceWaitingQueueRoomName(ambulanceId));
 }
 
 function broadcastDriverSelection(ambulanceId) {
-  io.to(ambulanceWaitingQueueRoomName(ambulanceId)).emit(OTHER_CITIZEN_SELECTION_EVENT);
+  const socketServer = getSocketServer();
+  socketServer.to(ambulanceWaitingQueueRoomName(ambulanceId)).emit(OTHER_CITIZEN_SELECTION_EVENT);
 }
 
 function initCitizenSocket(socket) {
+  console.log('Init CITIZEN_SOCKET_TYPE');
   initSocket(socket, CITIZEN_AUNTENTICATION_EVENT, Citizen,
     CITIZEN_AUTH_SUCCESS_EVENT, CITIZEN_SOCKET_TYPE);
 

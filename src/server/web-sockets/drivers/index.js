@@ -1,11 +1,11 @@
 const GenericDAO = require('../../dao/genericDAO');
 const Alarm = require('../../bo/alarm.bo');
 const Driver = require('../../bo/driver.bo');
-
+const { findPhoneAccountFromUserId } = require('../../helpers/phoneAccountHelpers');
 const {
   DRIVER_SOCKET_TYPE, CITIZEN_SOCKET_TYPE, SUCCESSFUL_FAKE_ALARM_DECLARATION_EVENT,
-  ACCEPTED_REQUEST_EVENT, DRIVER_AUNTENTICATION_EVENT, DRIVER_AUTH_SUCCESS_EVENT
-
+  ACCEPTED_REQUEST_EVENT, DRIVER_AUNTENTICATION_EVENT, DRIVER_AUTH_SUCCESS_EVENT,
+  REJECTED_REQUEST_EVENT, MISSION_ACCOMPLISHED_EVENT, FAKE_ALARM_EVENT
 } = require('../constants/index');
 
 const {
@@ -54,7 +54,7 @@ function changeAlarmAcceptanceState(alarmId, acceptanceState) {
 }
 
 function sendDriverDetailsToCitizen(citizenSocket, driverId) {
-  GenericDAO.findPhoneAccountFromUserId(Driver, driverId)
+  findPhoneAccountFromUserId(Driver, driverId)
     .then(({ businessObject, phoneAccount }) => {
       const message = {
         driver_id: driverId,
@@ -99,16 +99,6 @@ function rejectedRequestHandler(driverSocket, data) {
     });
 }
 
-function initDriverSocket(socket) {
-  initSocket(socket, DRIVER_AUNTENTICATION_EVENT, Driver,
-    DRIVER_AUTH_SUCCESS_EVENT, DRIVER_SOCKET_TYPE);
-
-  socket.on(ACCEPTED_REQUEST_EVENT, data => acceptedRequestHandler(socket, data));
-  socket.on(REJECTED_REQUEST_EVENT, data => rejectedRequestHandler(socket, data));
-  socket.on(MISSION_ACCOMPLISHED_EVENT, data => missionAccomplishedHandler(socket, data));
-  socket.on(FAKE_ALARM_EVENT, data => fakeAlarmHandler(socket, data));
-}
-
 function missionAccomplishedHandler(driverSocket, data) {
   if (!isSocketAuth(driverSocket)) return;
   verifyDriverResponseToAlarmData(driverSocket, data)
@@ -120,3 +110,20 @@ function missionAccomplishedHandler(driverSocket, data) {
       }
     });
 }
+
+function initDriverSocket(socket) {
+  console.log('Init DRIVER_SOCKET_TYPE');
+
+  initSocket(socket, DRIVER_AUNTENTICATION_EVENT, Driver,
+    DRIVER_AUTH_SUCCESS_EVENT, DRIVER_SOCKET_TYPE);
+
+  socket.on(ACCEPTED_REQUEST_EVENT, data => acceptedRequestHandler(socket, data));
+  socket.on(REJECTED_REQUEST_EVENT, data => rejectedRequestHandler(socket, data));
+  socket.on(MISSION_ACCOMPLISHED_EVENT, data => missionAccomplishedHandler(socket, data));
+  socket.on(FAKE_ALARM_EVENT, data => fakeAlarmHandler(socket, data));
+}
+
+
+module.exports = {
+  initDriverSocket
+};

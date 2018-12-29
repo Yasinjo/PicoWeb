@@ -65,8 +65,7 @@ function createApproveButton(alarmId, citizenId, fullName,
     socket.emit('ACCEPTED_REQUEST_EVENT', { alarm_id: alarmId });
     alarmsDiv.className = 'hidden';
     citizenInfoDiv.className = 'visible';
-    citizenImage.setAttribute('src', `http://localhost:9090/api/citizens/image/${citizenId}.jpg`);
-    citizenImage.setAttribute('width', '300');
+    citizenImage.appendChild(createCitizenPicture(citizenId));
     citizenName.innerHTML = fullName;
     citizenLatitude.innerHTML = citizenLatitudeVal;
     citizenLongitude.innerHTML = citizenLongitudeVal;
@@ -90,6 +89,7 @@ function createRejectButton(alarmId) {
 
 /* Socket.io handler */
 function newAlarmEventHandler(data) {
+  console.log('NEW_ALARM_EVENT');
   alarmsDiv.className = 'visible';
   labelDiv.className = 'hidden';
 
@@ -121,6 +121,7 @@ function citizenPositionChangeHandler(data) {
 }
 
 function newFeedbackHandler(data) {
+  console.log('CITIZEN_FEEDBACK_EVENT');
   if (data.alarm_id !== currentAlarmId) {
     console.error('Unappropriate alarm ID : newFeedbackHandler');
     return;
@@ -195,6 +196,10 @@ function login() {
       console.log('err :');
       console.log(err);
     });
+}
+
+function removeToken() {
+  localStorage.removeItem('driver_token');
 }
 
 function missionAccomplished() {

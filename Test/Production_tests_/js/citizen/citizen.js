@@ -194,6 +194,7 @@ function createDriverImage(driverId) {
 
 /* Socket.io functions */
 function acceptedRequestHandler(data) {
+  console.log('ACCEPTED_REQUEST_EVENT');
   labelDiv.className = 'hidden';
   driverInfoDiv.className = 'visible';
   driverImage.appendChild(createDriverImage(data.driver_id));
@@ -208,6 +209,7 @@ function showSelectOtherAmbulanceLabel(labelContent) {
 }
 
 function rejectedRequestHandler(data) {
+  console.log('REJECTED_REQUEST_EVENT');
   if (data.alarm_id === currentAlarmId) {
     labelDiv.className = 'hidden';
     currentAlarmId = null;
@@ -216,6 +218,7 @@ function rejectedRequestHandler(data) {
 }
 
 function otherCitizenSelectionHandler() {
+  console.log('OTHER_CITIZEN_SELECTION_EVENT');
   labelDiv.className = 'hidden';
   showSelectOtherAmbulanceLabel('The driver has selected another citizen');
 }
@@ -226,6 +229,7 @@ function ambulanceChangePositionHandler(data) {
 }
 
 function missionAccomplishedJHandler(data) {
+  console.log('MISSION_ACCOMPLISHED_EVENT');
   if (data.alarm_id === currentAlarmId) {
     driverInfoDiv.className = 'hidden';
     missionAccomplishedDiv.className = 'visible';
@@ -233,6 +237,8 @@ function missionAccomplishedJHandler(data) {
 }
 
 function accountDeactivatedHandler() {
+  console.log('ACCOUNT_DEACTIVATED_EVENT');
+
   localStorage.removeItem('token');
   labelDiv.className = 'hidden';
   currentAlarmId = null;
@@ -329,6 +335,10 @@ function selectOtherAmbulance() {
   selectOtherAmbulanceDiv.className = 'hidden';
   ambulancesDiv.className = 'visible';
   currentAlarmId = null;
+}
+
+function removeToken() {
+  localStorage.removeItem('token');
 }
 
 

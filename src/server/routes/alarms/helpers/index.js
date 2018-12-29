@@ -4,12 +4,10 @@ const Alarm = require('../../../bo/alarm.bo');
 const Driver = require('../../../bo/driver.bo');
 const Citizen = require('../../../bo/citizen.bo');
 const { findPhoneAccountFromUserId } = require('../../../helpers/phoneAccountHelpers');
+const { CITIZEN_SOCKET_TYPE, NEW_ALARM_EVENT } = require('../../../web-sockets/constants/index');
 const {
-  joinRoom, sendMessageToBO, ambulanceWaitingQueueRoomName, linkCitizenAndDriverSockets,
-  leaveAlarmWaitingQueue, broadcastDriverSelection, RemoveAmbulanceWaitingQueue,
-  changeAmbulanceAvailablity,
-  CITIZEN_SOCKET_TYPE, NEW_ALARM_EVENT, ACCEPTED_REQUEST_EVENT, REJECTED_REQUEST_EVENT
-} = require('../../../web-sockets/index'); // To correct
+  joinRoom, sendMessageToBO, ambulanceWaitingQueueRoomName,
+} = require('../../../web-sockets/index');
 
 const AMBULANCE_NOT_FOUND = 'Ambulance not found';
 const AMBULANCE_NOT_AVAILABLE = 'Ambulance not available anymore';
@@ -83,11 +81,6 @@ function addCitizenInWaitingQueue(citizenId, ambulanceId) {
     ambulanceWaitingQueueRoomName(ambulanceId), CITIZEN_SOCKET_TYPE);
 }
 
-function rejectAlarmRequest(citizenSocket, alarm) {
-  leaveAlarmWaitingQueue(citizenSocket, alarm.ambulance_id);
-  sendRejectionToCitizen(citizenSocket, alarm._id);
-}
-
 /*
 {
   driver_id : <string>,
@@ -123,6 +116,5 @@ module.exports = {
   createAlarm,
   addCitizenInWaitingQueue,
   notifyDriver,
-  rejectAlarmRequest,
   AMBULANCE_NOT_FOUND
 };

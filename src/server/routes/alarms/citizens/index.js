@@ -72,7 +72,6 @@ router.post('/', passport.authenticate(CITIZEN_AUTH_STRATEGY_NAME, { session: fa
         return GenericDAO.findAmbulanceDriver(ambulance._id);
       })
       .then((driver) => {
-        console.log('4');
         notifyDriver(driver._id, citizenId, alarm._id)
           .catch(err => console.log(`NotifyDriver error : ${err}`));
         response.status(201).send({ success: true, alarm_id: alarm._id });

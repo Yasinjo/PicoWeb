@@ -9,7 +9,6 @@ const Ambulance = require('../bo/ambulance.bo');
 const GenericDAO = require('../dao/genericDAO');
 const { extractUserIdFromToken } = require('../auth/tokenExtractors');
 const { PhoneAccount } = require('../bo/phone_account.bo');
-const { socketConnectionHandler } = require('./global');
 const { findPhoneAccountFromUserId } = require('../helpers/phoneAccountHelpers');
 const {
   DRIVER_SOCKET_TYPE, CITIZEN_SOCKET_TYPE, POSITION_CHANGE_EVENT, AMBULANCE_POSITION_CHANGE_EVENT,
@@ -154,6 +153,7 @@ function getSocketByBOId(BusinessSchema, userId) {
 }
 
 function joinRoom(BusinessSchema, userId, roomName, socketType) {
+  console.log(`joinRoom / userId : ${userId} / roomName : ${roomName}`);
   return new Promise((resolve, reject) => {
     getSocketByBOId(BusinessSchema, userId)
       .then((socket) => {
@@ -174,10 +174,9 @@ function initSocket(socket, AuthenticationEventName,
   socketDisconnect(socket, BOSchema);
 }
 
-function init(server) {
-  io = socketIO(server);
 
-  io.on('connection', socketConnectionHandler);
+function getSocketServer() {
+  return io;
 }
 
 // function matchSocketToToken(socketId, token) {
@@ -203,10 +202,6 @@ function sendMessageToBO(BusinessSchema, userId, eventName, message) {
 }
 
 function linkCitizenAndDriverSockets(citizenSocket, driverSocket, alarmId, ambulanceId) {
-  citizenSocket.alarmId = alarmId;
-  citizenSocket.ambulanceId = ambulanceId;
-
-  driverSocket.alarmId = alarmId;
   driverSocket.ambulanceId = ambulanceId;
 
   driverSocket.join(positionChangeRoomName(CITIZEN_SOCKET_TYPE, citizenSocket.userId));
@@ -253,11 +248,22 @@ module.exports = {
   verifyDriverResponseToAlarmData,
   changeAmbulanceAvailablity,
   RemoveAmbulanceWaitingQueue,
-  init,
   joinRoom,
   initSocket,
   setSocketAuth,
   isSocketAuth,
   getSocketByBOId,
-  io
+  getSocketServer
 };
+
+const { socketConnectionHandler } = require('./global');
+
+function init(server) {
+  io = socketIO(server);
+
+  io.on('connection', (socket) => {
+    socketConnectionHandler(socket);
+  });
+}
+
+module.exports.init = init;
