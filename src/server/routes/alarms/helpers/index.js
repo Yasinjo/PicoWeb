@@ -7,8 +7,9 @@ const { findPhoneAccountFromUserId } = require('../../../helpers/phoneAccountHel
 const {
   joinRoom, sendMessageToBO, ambulanceWaitingQueueRoomName, linkCitizenAndDriverSockets,
   leaveAlarmWaitingQueue, broadcastDriverSelection, RemoveAmbulanceWaitingQueue,
+  changeAmbulanceAvailablity,
   CITIZEN_SOCKET_TYPE, NEW_ALARM_EVENT, ACCEPTED_REQUEST_EVENT, REJECTED_REQUEST_EVENT
-} = require('../../../web-sockets/index');
+} = require('../../../web-sockets/index'); // To correct
 
 const AMBULANCE_NOT_FOUND = 'Ambulance not found';
 const AMBULANCE_NOT_AVAILABLE = 'Ambulance not available anymore';
@@ -82,52 +83,6 @@ function addCitizenInWaitingQueue(citizenId, ambulanceId) {
     ambulanceWaitingQueueRoomName(ambulanceId), CITIZEN_SOCKET_TYPE);
 }
 
-function changeAmbulanceAvailablity(ambulanceId, availability) {
-  GenericDAO.updateFields(Ambulance, { _id: ambulanceId }, { available: availability }, (err) => {
-    if (err) {
-      console.log('changeAmbulanceAvailablity error :');
-      console.log(err);
-    }
-  });
-}
-
-function changeAlarmAcceptanceState(alarmId, acceptanceState) {
-  GenericDAO.updateFields(Alarm, { _id: alarmId }, { accepted: acceptanceState }, (err) => {
-    if (err) {
-      console.log('changeAlarmAcceptanceState error :');
-      console.log(err);
-    }
-  });
-}
-
-function sendDriverDetailsToCitizen(citizenSocket, driverId) {
-  GenericDAO.findPhoneAccountFromUserId(Driver, driverId)
-    .then(({ businessObject, phoneAccount }) => {
-      const message = {
-        driver_id: driverId,
-        driver_full_name: businessObject.full_name,
-        driver_longitude: phoneAccount.longitude,
-        driver_latitude: phoneAccount.latitude
-      };
-
-      citizenSocket.emit(ACCEPTED_REQUEST_EVENT, message);
-    });
-}
-
-function sendRejectionToCitizen(citizenSocket, alarmId) {
-  citizenSocket.emit(REJECTED_REQUEST_EVENT, { alarm_id: alarmId });
-}
-
-function acceptAlarmRequest(driverSocket, citizenSocket, alarm) {
-  changeAmbulanceAvailablity(alarm.ambulance_id, false);
-  changeAlarmAcceptanceState(alarm._id, true);
-  sendDriverDetailsToCitizen(citizenSocket, driverSocket.userId);
-  linkCitizenAndDriverSockets(citizenSocket, driverSocket, alarm._id, alarm.ambulance_id);
-  leaveAlarmWaitingQueue(citizenSocket, alarm.ambulance_id);
-  broadcastDriverSelection(alarm.ambulance_id);
-  RemoveAmbulanceWaitingQueue(alarm.ambulance_id);
-}
-
 function rejectAlarmRequest(citizenSocket, alarm) {
   leaveAlarmWaitingQueue(citizenSocket, alarm.ambulance_id);
   sendRejectionToCitizen(citizenSocket, alarm._id);
@@ -168,8 +123,6 @@ module.exports = {
   createAlarm,
   addCitizenInWaitingQueue,
   notifyDriver,
-  acceptAlarmRequest,
-  changeAmbulanceAvailablity,
   rejectAlarmRequest,
   AMBULANCE_NOT_FOUND
 };

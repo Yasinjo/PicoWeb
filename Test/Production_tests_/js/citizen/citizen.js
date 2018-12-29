@@ -24,10 +24,15 @@ const driverLatitude = byId('driver_latitude');
 const driverLongitude = byId('driver_longitude');
 const selectOtherAmbulanceDiv = byId('select_other_ambulance_div');
 const selectOtherAmbulanceLabel = byId('select_other_ambulance_label');
+const missionAccomplishedDiv = byId('mission_accomplished_div');
+const feedbackDiv = byId('feedback_div');
+const feedbackPercentage = byId('feedback_percentage');
+const feedbackComment = byId('feedback_comment');
 
 let tokenVar = localStorage.getItem('token');
 let socket;
 let currentAlarmId;
+let positionTimer;
 
 function sendAlarm(ambulanceId) {
   labelDiv.className = 'visible';
@@ -167,7 +172,7 @@ function mainHospitals() {
 
 function initPositionTimer() {
   currentPositionDiv.className = 'visible';
-  setInterval(() => {
+  positionTimer = setInterval(() => {
     const message = {
       longitude: Math.random() * 100000,
       latitude: Math.random() * 100000
@@ -207,13 +212,35 @@ function rejectedRequestHandler(data) {
     labelDiv.className = 'hidden';
     currentAlarmId = null;
     showSelectOtherAmbulanceLabel('Your request has been rejected');
-  }
+  } else { console.error('Unappropriate alarm ID : rejectedRequestHandler'); }
 }
 
 function otherCitizenSelectionHandler() {
   labelDiv.className = 'hidden';
   showSelectOtherAmbulanceLabel('The driver has selected another citizen');
 }
+
+function ambulanceChangePositionHandler(data) {
+  driverLatitude.innerHTML = data.latitude;
+  driverLongitude.innerHTML = data.longitude;
+}
+
+function missionAccomplishedJHandler(data) {
+  if (data.alarm_id === currentAlarmId) {
+    driverInfoDiv.className = 'hidden';
+    missionAccomplishedDiv.className = 'visible';
+  }
+}
+
+function accountDeactivatedHandler() {
+  localStorage.removeItem('token');
+  labelDiv.className = 'hidden';
+  currentAlarmId = null;
+  loginDiv.className = 'visible';
+  loginError.innerHTML = 'Your account has been deactivated because of a false alarm';
+  if (positionTimer) { clearInterval(positionTimer); }
+}
+
 
 function initSocket() {
   socket = io(`${API_HOST}?userType=CITIZEN_SOCKET_TYPE`);
@@ -225,15 +252,14 @@ function initSocket() {
   socket.on('ACCEPTED_REQUEST_EVENT', acceptedRequestHandler);
   socket.on('REJECTED_REQUEST_EVENT', rejectedRequestHandler);
   socket.on('OTHER_CITIZEN_SELECTION_EVENT', otherCitizenSelectionHandler);
+  socket.on('AMBULANCE_POSITION_CHANGE_EVENT', ambulanceChangePositionHandler);
+  socket.on('MISSION_ACCOMPLISHED_EVENT', missionAccomplishedJHandler);
+
+  // Error events
   socket.on('ALARM_NOT_FOUND_EVENT', () => console.log('ALARM_NOT_FOUND_EVENT'));
-
+  socket.on('UNAUTHORIZED_FEEDBACK_EVENT', () => console.log('UNAUTHORIZED_FEEDBACK_EVENT'));
+  socket.on('ACCOUNT_DEACTIVATED_EVENT', accountDeactivatedHandler);
   /*
-  AMBULANCE_POSITION_CHANGE_EVENT;
-  UNAUTHORIZED_FEEDBACK_EVENT;
-
-  MISSION_ACCOMPLISHED_EVENT;
-  AMBULANCE_POSITION_CHANGE_EVENT;
-  ACCOUNT_DEACTIVATED_EVENT
   #!!
   */
 
@@ -281,10 +307,30 @@ function login() {
     });
 }
 
+function addFeedback() {
+  if (!currentAlarmId) return;
+  missionAccomplishedDiv.className = 'hidden';
+  feedbackDiv.className = 'visible';
+}
+
+function sendFeedbackAndBackToHospitalsList() {
+  const message = {
+    alarm_id: currentAlarmId,
+    percentage: feedbackPercentage.options[feedbackPercentage.selectedIndex].value,
+    comment: feedbackComment.value,
+  };
+
+  socket.emit('CITIZEN_FEEDBACK_EVENT', message);
+  feedbackDiv.className = 'hidden';
+  hospitalsDiv.className = 'visible';
+}
+
 function selectOtherAmbulance() {
   selectOtherAmbulanceDiv.className = 'hidden';
   ambulancesDiv.className = 'visible';
+  currentAlarmId = null;
 }
+
 
 if (tokenVar) {
   loginDiv.className = 'hidden';

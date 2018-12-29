@@ -20,6 +20,8 @@ const citizenImage = byId('citizen_image');
 const citizenName = byId('citizen_name');
 const citizenLatitude = byId('citizen_latitude');
 const citizenLongitude = byId('citizen_longitude');
+const feedbackDiv = byId('feedback_div');
+const feedbackTable = byId('feedback_table');
 
 let currentAlarmId;
 
@@ -53,7 +55,8 @@ function createCitizenPicture(citizenId) {
   return img;
 }
 
-function createApproveButton(alarmId, citizenId, fullName, citizenLatitude, citizenLongitude) {
+function createApproveButton(alarmId, citizenId, fullName,
+  citizenLatitudeVal, citizenLongitudeVal) {
   const btn = document.createElement('BUTTON');
   const t = document.createTextNode('Approve');
   btn.appendChild(t);
@@ -65,8 +68,8 @@ function createApproveButton(alarmId, citizenId, fullName, citizenLatitude, citi
     citizenImage.setAttribute('src', `http://localhost:9090/api/citizens/image/${citizenId}.jpg`);
     citizenImage.setAttribute('width', '300');
     citizenName.innerHTML = fullName;
-    citizenLatitude.innerHTML = citizenLatitude;
-    citizenLongitude.innerHTML = citizenLongitude;
+    citizenLatitude.innerHTML = citizenLatitudeVal;
+    citizenLongitude.innerHTML = citizenLongitudeVal;
   };
 
   return btn;
@@ -85,6 +88,7 @@ function createRejectButton(alarmId) {
   return btn;
 }
 
+/* Socket.io handler */
 function newAlarmEventHandler(data) {
   alarmsDiv.className = 'visible';
   labelDiv.className = 'hidden';
@@ -101,7 +105,8 @@ function newAlarmEventHandler(data) {
 
   citizenPicture.appendChild(createCitizenPicture(data.citizen_id));
   approve.appendChild(
-    createApproveButton(data.alarm_id, data.citizen_id, data.full_name, data.latitude, data.longitude)
+    createApproveButton(data.alarm_id, data.citizen_id, data.full_name,
+      data.latitude, data.longitude)
   );
   reject.appendChild(createRejectButton(data.alarm_id));
 
@@ -110,20 +115,50 @@ function newAlarmEventHandler(data) {
   longitude.innerHTML = data.longitude;
 }
 
+function citizenPositionChangeHandler(data) {
+  citizenLatitude.innerHTML = data.latitude;
+  citizenLongitude.innerHTML = data.longitude;
+}
+
+function newFeedbackHandler(data) {
+  if (data.alarm_id !== currentAlarmId) {
+    console.error('Unappropriate alarm ID : newFeedbackHandler');
+    return;
+  }
+
+  feedbackDiv.className = 'visible';
+  const row = feedbackTable.insertRow(-1);
+  const citizenPicture = row.insertCell(0);
+  const percentage = row.insertCell(1);
+  const comment = row.insertCell(2);
+
+  citizenPicture.appendChild(createCitizenPicture(data.citizen_id));
+  percentage.innerHTML = data.percentage;
+  comment.innerHTML = data.comment;
+}
+
 function initSocket() {
   socket = io(`${API_HOST}?userType=DRIVER_SOCKET_TYPE`);
+
+  socket.on('NEW_ALARM_EVENT', newAlarmEventHandler);
+  socket.on('CITIZEN_POSITION_CHANGE_EVENT', citizenPositionChangeHandler);
+  socket.on('CITIZEN_FEEDBACK_EVENT', newFeedbackHandler);
+
+  socket.on('SUCCESSFUL_FAKE_ALARM_DECLARATION_EVENT', () => console.log('SUCCESSFUL_FAKE_ALARM_DECLARATION_EVENT'));
   socket.on('ALARM_NOT_FOUND_EVENT', () => console.log('ALARM_NOT_FOUND_EVENT'));
   socket.on('UNAUTHORIZED_MISSION_COMPLETION_EVENT', () => console.log('UNAUTHORIZED_MISSION_COMPLETION_EVENT'));
-  socket.on('NEW_ALARM_EVENT', newAlarmEventHandler);
+
   socket.on('DRIVER_AUTH_SUCCESS_EVENT', () => {
     initPositionTimer();
     main();
   });
+
   socket.on('connect', () => {
     socket.emit('DRIVER_AUNTENTICATION_EVENT', { token: tokenVar });
   });
 }
 
+/* DOM event handlers */
 function login() {
   loginError.innerHTML = null;
   const data = JSON.stringify({
@@ -160,6 +195,18 @@ function login() {
       console.log('err :');
       console.log(err);
     });
+}
+
+function missionAccomplished() {
+  if (currentAlarmId) {
+    socket.emit('MISSION_ACCOMPLISHED_EVENT', { alarm_id: currentAlarmId });
+  } else { console.error('Invalid alarm ID : missionAccomplished'); }
+}
+
+function fakeAlarm() {
+  if (currentAlarmId) {
+    socket.emit('FAKE_ALARM_EVENT', { alarm_id: currentAlarmId });
+  } else { console.error('Invalid alarm ID : fakeAlarm'); }
 }
 
 if (tokenVar) {
