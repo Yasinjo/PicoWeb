@@ -28,6 +28,7 @@ const missionAccomplishedDiv = byId('mission_accomplished_div');
 const feedbackDiv = byId('feedback_div');
 const feedbackPercentage = byId('feedback_percentage');
 const feedbackComment = byId('feedback_comment');
+const cancelAlarmDiv = byId('cancel_alarm_div');
 
 let tokenVar = localStorage.getItem('token');
 let socket;
@@ -55,6 +56,7 @@ function sendAlarm(ambulanceId) {
       if (responseJSON.success) {
         currentAlarmId = responseJSON.alarm_id;
         labelDiv.innerHTML = '<b>Waiting for driver approval</b>';
+        cancelAlarmDiv.className = 'visible';
       } else console.log(responseJSON);
     });
 }
@@ -196,6 +198,7 @@ function createDriverImage(driverId) {
 function acceptedRequestHandler(data) {
   console.log('ACCEPTED_REQUEST_EVENT');
   labelDiv.className = 'hidden';
+  cancelAlarmDiv.className = 'hidden';
   driverInfoDiv.className = 'visible';
   driverImage.appendChild(createDriverImage(data.driver_id));
   driverName.innerHTML = data.driver_full_name;
@@ -212,6 +215,7 @@ function rejectedRequestHandler(data) {
   console.log('REJECTED_REQUEST_EVENT');
   if (data.alarm_id === currentAlarmId) {
     labelDiv.className = 'hidden';
+    cancelAlarmDiv.className = 'hidden';
     currentAlarmId = null;
     showSelectOtherAmbulanceLabel('Your request has been rejected');
   } else { console.error('Unappropriate alarm ID : rejectedRequestHandler'); }
@@ -220,6 +224,7 @@ function rejectedRequestHandler(data) {
 function otherCitizenSelectionHandler() {
   console.log('OTHER_CITIZEN_SELECTION_EVENT');
   labelDiv.className = 'hidden';
+  cancelAlarmDiv.className = 'hidden';
   showSelectOtherAmbulanceLabel('The driver has selected another citizen');
 }
 
@@ -241,6 +246,7 @@ function accountDeactivatedHandler() {
 
   localStorage.removeItem('token');
   labelDiv.className = 'hidden';
+  cancelAlarmDiv.className = 'hidden';
   driverInfoDiv.className = 'hidden';
   currentAlarmId = null;
   loginDiv.className = 'visible';
@@ -265,6 +271,8 @@ function initSocket() {
   // Error events
   socket.on('ALARM_NOT_FOUND_EVENT', () => console.log('ALARM_NOT_FOUND_EVENT'));
   socket.on('UNAUTHORIZED_FEEDBACK_EVENT', () => console.log('UNAUTHORIZED_FEEDBACK_EVENT'));
+  socket.on('BAD_REQUEST_EVENT', () => console.log('BAD_REQUEST_EVENT'));
+
   socket.on('ACCOUNT_DEACTIVATED_EVENT', accountDeactivatedHandler);
   /*
   #!!
@@ -340,6 +348,11 @@ function selectOtherAmbulance() {
 
 function removeToken() {
   localStorage.removeItem('token');
+}
+
+function cancelAlarm() {
+  console.log(`currentAlarmId :${currentAlarmId}`);
+  socket.emit('CANCEL_ALARM_EVENT', { alarm_id: currentAlarmId });
 }
 
 

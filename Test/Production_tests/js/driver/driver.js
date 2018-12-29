@@ -121,12 +121,6 @@ function citizenPositionChangeHandler(data) {
 }
 
 function newFeedbackHandler(data) {
-  console.log('CITIZEN_FEEDBACK_EVENT');
-  if (data.alarm_id !== currentAlarmId) {
-    console.error('Unappropriate alarm ID : newFeedbackHandler');
-    return;
-  }
-
   feedbackDiv.className = 'visible';
   const row = feedbackTable.insertRow(-1);
   const citizenPicture = row.insertCell(0);
@@ -138,13 +132,20 @@ function newFeedbackHandler(data) {
   comment.innerHTML = data.comment;
 }
 
+function cancelAlarmHandler(data) {
+  const row = byId(data.alarm_id);
+  if (row) { row.parentNode.removeChild(row); } else console.error('Unappropriate Alarm ID');
+}
+
 function initSocket() {
   socket = io(`${API_HOST}?userType=DRIVER_SOCKET_TYPE`);
 
   socket.on('NEW_ALARM_EVENT', newAlarmEventHandler);
   socket.on('CITIZEN_POSITION_CHANGE_EVENT', citizenPositionChangeHandler);
   socket.on('CITIZEN_FEEDBACK_EVENT', newFeedbackHandler);
+  socket.on('CANCEL_ALARM_EVENT', cancelAlarmHandler);
 
+  socket.on('BAD_REQUEST_EVENT', () => console.log('BAD_REQUEST_EVENT'));
   socket.on('SUCCESSFUL_FAKE_ALARM_DECLARATION_EVENT', () => console.log('SUCCESSFUL_FAKE_ALARM_DECLARATION_EVENT'));
   socket.on('ALARM_NOT_FOUND_EVENT', () => console.log('ALARM_NOT_FOUND_EVENT'));
   socket.on('UNAUTHORIZED_MISSION_COMPLETION_EVENT', () => console.log('UNAUTHORIZED_MISSION_COMPLETION_EVENT'));

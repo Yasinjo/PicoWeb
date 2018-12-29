@@ -23,7 +23,9 @@ const constants = keyMirror({
   SUCCESSFUL_FAKE_ALARM_DECLARATION_EVENT: null,
   ACCEPTED_REQUEST_EVENT: null,
   OTHER_CITIZEN_SELECTION_EVENT: null,
-  REJECTED_REQUEST_EVENT: null
+  REJECTED_REQUEST_EVENT: null,
+  CANCEL_ALARM_EVENT: null,
+  BAD_REQUEST_EVENT: null
 });
 
 module.exports = constants;

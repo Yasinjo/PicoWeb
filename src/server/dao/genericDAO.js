@@ -144,11 +144,21 @@ function calculateAmbulanceRatings(ambulancesParam) {
   });
 }
 
+function remove(businessSchema, selector) {
+  return new Promise((resolve, reject) => {
+    businessSchema.remove(selector, (err) => {
+      if (err) return reject(err);
+      return resolve();
+    });
+  });
+}
+
 
 // Export the module
 module.exports = {
   save,
   find,
+  remove,
   findOne,
   updateFields,
   findAvailableAmbulancesByHospital,

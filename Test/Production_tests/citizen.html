@@ -54,6 +54,9 @@
     </div>
 
     <div id="label_div" class="hidden">Waiting for something</div>
+    <div id="cancel_alarm_div" class="hidden">
+      <button onclick="cancelAlarm();">Cancel alarm</button>
+    </div>
 
     <div id="driver_info_div" class="hidden">
       <table>
@@ -104,12 +107,12 @@
           <td>Percentage</td>
           <td>
             <select id="feedback_percentage">
-              <option value="0.1">0%</option>
-              <option value="0.2">20%</option>
-              <option value="0.4">40%</option>
-              <option value="0.6">60%</option>
-              <option value="0.8">80%</option>
-              <option value="1">100%</option>
+              <option value="0">0%</option>
+              <option value="1">20%</option>
+              <option value="2">40%</option>
+              <option value="3">60%</option>
+              <option value="4">80%</option>
+              <option value="5">100%</option>
             </select>
           </td>
         </tr>

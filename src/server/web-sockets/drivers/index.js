@@ -53,14 +53,15 @@ function changeAlarmAcceptanceState(alarmId, acceptanceState) {
   });
 }
 
-function sendDriverDetailsToCitizen(citizenSocket, driverId) {
+function sendDriverDetailsToCitizen(citizenSocket, driverId, alarmId) {
   findPhoneAccountFromUserId(Driver, driverId)
     .then(({ businessObject, phoneAccount }) => {
       const message = {
         driver_id: driverId,
         driver_full_name: businessObject.full_name,
         driver_longitude: phoneAccount.longitude,
-        driver_latitude: phoneAccount.latitude
+        driver_latitude: phoneAccount.latitude,
+        alarm_id: alarmId
       };
 
       citizenSocket.emit(ACCEPTED_REQUEST_EVENT, message);
@@ -70,7 +71,7 @@ function sendDriverDetailsToCitizen(citizenSocket, driverId) {
 function acceptAlarmRequest(driverSocket, citizenSocket, alarm) {
   changeAmbulanceAvailablity(alarm.ambulance_id, false);
   changeAlarmAcceptanceState(alarm._id, true);
-  sendDriverDetailsToCitizen(citizenSocket, driverSocket.userId);
+  sendDriverDetailsToCitizen(citizenSocket, driverSocket.userId, alarm._id);
   linkCitizenAndDriverSockets(citizenSocket, driverSocket);
   leaveAlarmWaitingQueue(citizenSocket, alarm.ambulance_id);
   broadcastDriverSelection(alarm.ambulance_id);

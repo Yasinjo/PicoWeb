@@ -1,3 +1,4 @@
+const _ = require('lodash');
 const GenericDAO = require('../../dao/genericDAO');
 const Driver = require('../../bo/driver.bo');
 const Alarm = require('../../bo/alarm.bo');
@@ -11,7 +12,8 @@ const {
 const {
   ACCOUNT_DEACTIVATED_EVENT, ALARM_NOT_FOUND_EVENT, UNAUTHORIZED_FEEDBACK_EVENT,
   CITIZEN_AUNTENTICATION_EVENT, CITIZEN_AUTH_SUCCESS_EVENT, CITIZEN_SOCKET_TYPE,
-  CITIZEN_FEEDBACK_EVENT, OTHER_CITIZEN_SELECTION_EVENT, REJECTED_REQUEST_EVENT
+  CITIZEN_FEEDBACK_EVENT, OTHER_CITIZEN_SELECTION_EVENT, REJECTED_REQUEST_EVENT,
+  CANCEL_ALARM_EVENT, BAD_REQUEST_EVENT
 } = require('../constants/index');
 
 
@@ -36,9 +38,10 @@ function notifyDeactivatedCitizen(citizenSocket, driverId) {
   });
 }
 
-function verifyCitizenFeedbackData(socket, data) {
+function verifyCitizenMessageData(socket, data, requiredKeys) {
   return new Promise((resolve) => {
-    if (!data.alarm_id || !data.percentage) { return socket.emit(ALARM_NOT_FOUND_EVENT); }
+    const test = _.every(requiredKeys, _.partial(_.has, data));
+    if (!test) { return socket.emit(BAD_REQUEST_EVENT); }
 
     return GenericDAO.findOne(Alarm, { _id: data.alarm_id }, (err, alarm) => {
       if (err || !alarm) return socket.emit(ALARM_NOT_FOUND_EVENT);
@@ -49,7 +52,7 @@ function verifyCitizenFeedbackData(socket, data) {
       return GenericDAO.findAmbulanceDriver(alarm.ambulance_id)
         .then(driver => resolve({ driver, alarm }))
         .catch((err2) => {
-          console.log('verifyCitizenFeedbackData error :');
+          console.log('verifyCitizenMessageData error :');
           console.log(err2);
           return resolve({ alarm });
         });
@@ -64,7 +67,7 @@ function saveFeedBack(feedbackData) {
 
 function citizenFeedbackHandler(citizenSocket, data) {
   if (!isSocketAuth(citizenSocket)) return;
-  verifyCitizenFeedbackData(citizenSocket, data)
+  verifyCitizenMessageData(citizenSocket, data, ['alarm_id', 'percentage'])
     .then(({ driver }) => {
       const feedbackData = {
         citizen_id: citizenSocket.userId,
@@ -96,6 +99,30 @@ function leaveAlarmWaitingQueue(citizenSocket, ambulanceId) {
   citizenSocket.leave(ambulanceWaitingQueueRoomName(ambulanceId));
 }
 
+function citizenCancelAlarmHandler(citizenSocket, data) {
+  if (!isSocketAuth(citizenSocket)) return;
+  let driverVar;
+  verifyCitizenMessageData(citizenSocket, data, ['alarm_id'])
+    .then(({ driver, alarm }) => {
+      driverVar = driver;
+      leaveAlarmWaitingQueue(citizenSocket, alarm.ambulance_id);
+      return GenericDAO.remove(Alarm, { _id: data.alarm_id });
+    })
+    .then(() => getSocketByBOId(Driver, driverVar._id))
+    .then((driverSocket) => {
+      const message = {
+        alarm_id: data.alarm_id,
+      };
+
+      driverSocket.emit(CANCEL_ALARM_EVENT, message);
+    })
+    .catch((err) => {
+      console.log('citizenCancelAlarmHandler error :');
+      console.log(err);
+    });
+}
+
+
 function broadcastDriverSelection(ambulanceId) {
   const socketServer = getSocketServer();
   socketServer.to(ambulanceWaitingQueueRoomName(ambulanceId)).emit(OTHER_CITIZEN_SELECTION_EVENT);
@@ -106,6 +133,7 @@ function initCitizenSocket(socket) {
     CITIZEN_AUTH_SUCCESS_EVENT, CITIZEN_SOCKET_TYPE);
 
   socket.on(CITIZEN_FEEDBACK_EVENT, data => citizenFeedbackHandler(socket, data));
+  socket.on(CANCEL_ALARM_EVENT, data => citizenCancelAlarmHandler(socket, data));
 }
 
 function sendRejectionToCitizen(citizenSocket, alarmId) {
