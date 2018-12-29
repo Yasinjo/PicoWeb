@@ -81,7 +81,7 @@ function createRejectButton(alarmId) {
   btn.onclick = () => {
     socket.emit('REJECTED_REQUEST_EVENT', { alarm_id: alarmId });
     // remove row
-    const row = byId('alarmId');
+    const row = byId(alarmId);
     row.parentNode.removeChild(row);
   };
   return btn;

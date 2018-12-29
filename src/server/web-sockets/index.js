@@ -236,16 +236,11 @@ function verifyDriverResponseToAlarmData(socket, data) {
 
 function RemoveAmbulanceWaitingQueue(ambulanceId) {
   const roomName = ambulanceWaitingQueueRoomName(ambulanceId);
-  try {
-    const usersInRoom = io.sockets.clients(roomName);
-    usersInRoom.forEach((citizenSocket) => {
-      console.log('citizenSocket :');
-      console.log(`citizenSocket.id :${citizenSocket.id} / citizenSocket.socketType : ${citizenSocket.socketType}`);
-      citizenSocket.leave(roomName);
-    });
-  } catch (err) {
-    console.log('RemoveAmbulanceWaitingQueue error :');
-  }
+  io.in(roomName).clients((error, socketIds) => {
+    if (error) throw error;
+
+    socketIds.forEach(socketId => getSocketById(socketId).leave(roomName));
+  });
 }
 
 module.exports = {

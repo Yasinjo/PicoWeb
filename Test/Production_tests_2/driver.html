@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title></title>
+    <link rel="stylesheet" type="text/css" href="css/style.css" />
+  </head>
+  <body>
+    <br />
+    <br />
+
+    <div id="menu">
+      <div id="my_position">
+        <b>My position</b> <br />
+        Longitude
+        <input id="longitude" type="number" step="0.01" disabled /> &nbsp;
+        &nbsp; Latitude
+        <input id="latitude" type="number" step="0.01" disabled />
+      </div>
+      <br />
+      <br />
+
+      <b>Status : </b> <label id="log">Initial status</label> <br />
+      <br />
+
+      <div id="new_alarm_div" class="hidden">
+        <b>Current Alarm ID : </b> <label id="current_alarm_id"></label> <br />
+        <br />
+        <b>Citizen ID : </b> <label id="citizen_id"></label> <br />
+        <br />
+        <b>Citizen full name : </b> <label id="citizen_name"></label> <br />
+        <br />
+        <b>Citizen longitude : </b> <label id="citizen_logitude"></label><br />
+        <br />
+        <b>Citizen latitude : </b> <label id="citizen_latitude"></label><br />
+        <br />
+
+        <button id="mission_accomplished" onclick="missionAccomplished();">
+          Mission accomplished
+        </button>
+        &nbsp; &nbsp;
+        <button id="fake_declaration" onclick="declareFakeAlarm();">
+          Declare alarm as fake
+        </button>
+      </div>
+
+      <div id="new_feedback" class="hidden">
+        <b>New feedback :</b> <br />
+        <br />
+        <b>Alarm ID : </b> <label id="feedback_alarm_id"></label> <br />
+        <br />
+        <b>Citizen ID : </b> <label id="feedback_citizen_id"></label> <br />
+        <br />
+        <b>Feedback percentage : </b> <label id="feedback_percentage"></label>
+        <br />
+        <br />
+        <b>Feedback comment : </b> <label id="feedback_comment"></label> <br />
+        <br />
+      </div>
+    </div>
+  </body>
+  <script src="js/socket.io.js"></script>
+  <script src="js/driver.js"></script>
+</html>

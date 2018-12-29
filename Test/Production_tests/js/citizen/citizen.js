@@ -241,6 +241,7 @@ function accountDeactivatedHandler() {
 
   localStorage.removeItem('token');
   labelDiv.className = 'hidden';
+  driverInfoDiv.className = 'hidden';
   currentAlarmId = null;
   loginDiv.className = 'visible';
   loginError.innerHTML = 'Your account has been deactivated because of a false alarm';

@@ -5,3 +5,11 @@
 .visible {
   display: block;
 }
+
+div {
+  margin: 20px;
+}
+
+.error {
+  color: red;
+}
