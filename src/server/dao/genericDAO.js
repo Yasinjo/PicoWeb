@@ -110,7 +110,7 @@ function getAmbulanceAverageRating(ambulanceId) {
           { $group: { _id: driver._id, average: { $avg: '$percentage' } } }
         ], (err, result) => {
           if (err) return reject(err);
-          if (result.length > 0) { return resolve(result[0].average.toFixed(2)); }
+          if (result.length > 0) { return resolve(Number(result[0].average.toFixed(2))); }
           return resolve(0);
         });
       })

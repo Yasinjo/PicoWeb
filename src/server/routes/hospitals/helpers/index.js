@@ -66,7 +66,8 @@ function getAllHospitals(request, response) {
                 latitude : <number>,
                 longiude : <number>,
                 available : <boolean>,
-                hospital_id : <string>
+                rating : <number>,
+                hospital_ids : [<string>]
             }
           ]
         }
