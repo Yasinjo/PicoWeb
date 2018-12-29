@@ -17,6 +17,13 @@ const labelDiv = byId('label_div');
 const currentPositionDiv = byId('current_position_div');
 const longitudeElt = byId('longitude');
 const latitudeElt = byId('latitude');
+const driverInfoDiv = byId('driver_info_div');
+const driverImage = byId('driver_image');
+const driverName = byId('driver_name');
+const driverLatitude = byId('driver_latitude');
+const driverLongitude = byId('driver_longitude');
+const selectOtherAmbulanceDiv = byId('select_other_ambulance_div');
+const selectOtherAmbulanceLabel = byId('select_other_ambulance_label');
 
 let tokenVar = localStorage.getItem('token');
 let socket;
@@ -173,17 +180,69 @@ function initPositionTimer() {
   }, 2000);
 }
 
+function createDriverImage(driverId) {
+  const img = document.createElement('IMG');
+  img.setAttribute('src', `http://localhost:9090/api/drivers/image/${driverId}.jpg`);
+  img.setAttribute('width', '300');
+  return img;
+}
+
+/* Socket.io functions */
+function acceptedRequestHandler(data) {
+  labelDiv.className = 'hidden';
+  driverInfoDiv.className = 'visible';
+  driverImage.appendChild(createDriverImage(data.driver_id));
+  driverName.innerHTML = data.driver_full_name;
+  driverLatitude.innerHTML = data.driver_latitude;
+  driverLongitude.innerHTML = data.driver_longitude;
+}
+
+function showSelectOtherAmbulanceLabel(labelContent) {
+  selectOtherAmbulanceDiv.className = 'visible';
+  selectOtherAmbulanceLabel.innerHTML = labelContent;
+}
+
+function rejectedRequestHandler(data) {
+  if (data.alarm_id === currentAlarmId) {
+    labelDiv.className = 'hidden';
+    currentAlarmId = null;
+    showSelectOtherAmbulanceLabel('Your request has been rejected');
+  }
+}
+
+function otherCitizenSelectionHandler() {
+  labelDiv.className = 'hidden';
+  showSelectOtherAmbulanceLabel('The driver has selected another citizen');
+}
+
 function initSocket() {
   socket = io(`${API_HOST}?userType=CITIZEN_SOCKET_TYPE`);
   socket.on('CITIZEN_AUTH_SUCCESS_EVENT', () => {
     initPositionTimer();
     mainHospitals();
   });
+
+  socket.on('ACCEPTED_REQUEST_EVENT', acceptedRequestHandler);
+  socket.on('REJECTED_REQUEST_EVENT', rejectedRequestHandler);
+  socket.on('OTHER_CITIZEN_SELECTION_EVENT', otherCitizenSelectionHandler);
+  socket.on('ALARM_NOT_FOUND_EVENT', () => console.log('ALARM_NOT_FOUND_EVENT'));
+
+  /*
+  AMBULANCE_POSITION_CHANGE_EVENT;
+  UNAUTHORIZED_FEEDBACK_EVENT;
+
+  MISSION_ACCOMPLISHED_EVENT;
+  AMBULANCE_POSITION_CHANGE_EVENT;
+  ACCOUNT_DEACTIVATED_EVENT
+  #!!
+  */
+
   socket.on('connect', () => {
     socket.emit('CITIZEN_AUNTENTICATION_EVENT', { token: tokenVar });
   });
 }
 
+/* DOM event handlers */
 function login() {
   loginError.innerHTML = null;
   const data = JSON.stringify({
@@ -220,6 +279,11 @@ function login() {
       console.log('err :');
       console.log(err);
     });
+}
+
+function selectOtherAmbulance() {
+  selectOtherAmbulanceDiv.className = 'hidden';
+  ambulancesDiv.className = 'visible';
 }
 
 if (tokenVar) {
