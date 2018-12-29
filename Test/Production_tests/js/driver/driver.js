@@ -40,7 +40,7 @@ function initPositionTimer() {
     latitudeElt.innerHTML = message.latitude;
 
     socket.emit('POSITION_CHANGE_EVENT', message);
-  }, 2000);
+  }, 5000);
 }
 
 function main() {
