@@ -1,5 +1,5 @@
-// const API_HOST = 'http://localhost:9090';
-const API_HOST = 'http://pico.ossrv.nl:9090';
+const API_HOST = 'http://localhost:9090';
+// const API_HOST = 'http://pico.ossrv.nl:9090';
 
 function byId(id) {
   return document.getElementById(id);
