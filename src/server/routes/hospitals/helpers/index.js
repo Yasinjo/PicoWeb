@@ -81,8 +81,10 @@ function getAmbulancesByHospital(request, response) {
       (err, ambulances) => {
       // If there is an error, send it in response
         if (err) response.status(500).send(err);
-        // Otherwise, send the hospitals in response
-        return response.status(200).send({ success: true, ambulances });
+        // otherwise, sen
+        GenericDAO.calculateAmbulanceRatings(ambulances)
+          .then(ambulancesResult => response.status(200)
+            .send({ success: true, ambulances: ambulancesResult }));
       });
   }
   // If there is no token, send a 403 response

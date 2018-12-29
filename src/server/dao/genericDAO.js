@@ -9,6 +9,7 @@ const Ambulance = require('../bo/ambulance.bo');
 const Driver = require('../bo/driver.bo');
 const Citizen = require('../bo/citizen.bo');
 const Alarm = require('../bo/alarm.bo');
+const Feedback = require('../bo/feedback.bo');
 
 /*
     * @function
@@ -100,6 +101,50 @@ function saveAlarmAsFalse(alarmId, driverId) {
     });
 }
 
+function getAmbulanceAverageRating(ambulanceId) {
+  return new Promise((resolve, reject) => {
+    findAmbulanceDriver(ambulanceId)
+      .then((driver) => {
+        Feedback.aggregate([
+          { $match: { driver_id: driver._id } },
+          { $group: { _id: driver._id, average: { $avg: '$percentage' } } }
+        ], (err, result) => {
+          if (err) return reject(err);
+          if (result.length > 0) { return resolve(result[0].average.toFixed(2)); }
+          return resolve(0);
+        });
+      })
+      .catch((err) => {
+        console.log('getAmbulanceAverageRating error :');
+        console.log(err);
+        reject(err);
+      });
+  });
+}
+
+function calculateAmbulanceRatings(ambulancesParam) {
+  const ambulances = [...ambulancesParam];
+  return new Promise((resolve) => {
+    const addRate = (i) => {
+      getAmbulanceAverageRating(ambulances[i])
+        .then((averageRating) => {
+          ambulances[i]._doc.rating = averageRating;
+        })
+        .catch(err => console.log(`addAmbulanceRatings error : ${err}`))
+        .finally(() => {
+          if (i + 1 < ambulances.length) {
+            addRate(i + 1);
+          } else {
+            resolve(ambulances);
+          }
+        });
+    };
+
+    addRate(0);
+  });
+}
+
+
 // Export the module
 module.exports = {
   save,
@@ -109,5 +154,6 @@ module.exports = {
   findAvailableAmbulancesByHospital,
   findAmbulanceDriver,
   deactivateCitizenAccount,
-  saveAlarmAsFalse
+  saveAlarmAsFalse,
+  calculateAmbulanceRatings
 };
