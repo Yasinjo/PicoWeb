@@ -57,6 +57,7 @@ const staticPosition = [
   { latitude: 33.700453, longitude: -7.362449 },
   { latitude: 33.700301, longitude: -7.362664 }
 ];
+let currentPositionIndex = 0;
 let currentAlarmId;
 
 let tokenVar = localStorage.getItem('driver_token');
