@@ -1,4 +1,4 @@
-//const API_HOST = 'http://localhost:9090';
+// const API_HOST = 'http://localhost:9090';
 const API_HOST = 'http://pico.ossrv.nl:9090';
 
 function byId(id) {
@@ -63,7 +63,7 @@ let currentAlarmId;
 let tokenVar = localStorage.getItem('driver_token');
 let socket;
 
-/*function initPositionTimer() {
+/* function initPositionTimer() {
   currentPositionDiv.className = 'visible';
   setInterval(() => {
     const message = {
@@ -76,11 +76,12 @@ let socket;
 
     socket.emit('POSITION_CHANGE_EVENT', message);
   }, 5000);
-}*/
+} */
+
 function initPositionTimer() {
-  intervalID = setInterval(() => {
+  currentPositionDiv.className = 'visible';
+  setInterval(() => {
     if (currentPositionIndex === staticPosition.length) {
-      // clearInterval(intervalID);
       currentPositionIndex = 0;
       return;
     }
