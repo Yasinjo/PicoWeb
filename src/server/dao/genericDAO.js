@@ -10,6 +10,8 @@ const Driver = require('../bo/driver.bo');
 const Citizen = require('../bo/citizen.bo');
 const Alarm = require('../bo/alarm.bo');
 const Feedback = require('../bo/feedback.bo');
+const Hospital = require('../bo/hospital.bo');
+
 
 /*
     * @function
@@ -153,6 +155,19 @@ function remove(businessSchema, selector) {
   });
 }
 
+function findHospitalsByAmbulanceId(ambulanceId) {
+  return new Promise((resolve, reject) => {
+    findOne(Ambulance, { _id: ambulanceId }, (err, ambulance) => {
+      if (err) { return reject(err); }
+      if (!ambulance) return reject('Ambulance not found');
+      return find(Hospital, { _id: { $in: ambulance.hospital_ids } }, (err2, hospitals) => {
+        if (err2) { return reject(err); }
+        return resolve(hospitals);
+      });
+    });
+  });
+}
+
 
 // Export the module
 module.exports = {
@@ -162,6 +177,7 @@ module.exports = {
   findOne,
   updateFields,
   findAvailableAmbulancesByHospital,
+  findHospitalsByAmbulanceId,
   findAmbulanceDriver,
   deactivateCitizenAccount,
   saveAlarmAsFalse,

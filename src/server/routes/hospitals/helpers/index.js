@@ -7,11 +7,54 @@
 const _ = require('lodash');
 const GenericDAO = require('../../../dao/genericDAO');
 const Hospital = require('../../../bo/hospital.bo');
+const Driver = require('../../../bo/driver.bo');
 const getToken = require('../../../helpers/getToken');
+const { extractUserObjectFromToken } = require('../../../auth/tokenExtractors');
 
 /*
     * @function
     * @description : get all the hospitals in from the database
+    * @param{request}[Object] : the http request object
+    * @param{response}[Object] : the http response object
+    * @Request header :
+        Authorization : <string>{required} ==> The token
+    * @Response body :
+      - 403
+      - 500
+      - 200 :
+        { success : <boolean>,
+          hospitals : [
+            {
+                _id : <string>
+                name : <string>,
+                latitude : <number>,
+                longiude : <number>
+            }
+          ]
+        }
+*/
+function getAllHospitalsByDriver(request, response) {
+  // Get the token from the request
+  const token = getToken(request.headers);
+  // Check the token
+  if (token) {
+    // If there is a token, get the driver object from token
+    return extractUserObjectFromToken(Driver, token)
+      .then(driver => GenericDAO.findHospitalsByAmbulanceId(driver.ambulance_id))
+      .then(hospitals => response.status(200).send({ success: true, hospitals }))
+      .catch((error) => {
+        console.log('error :');
+        console.log(error);
+        response.status(400).send({ success: false, error });
+      });
+  }
+  // If there is no token, send a 403 response
+  return response.status(403).send({ success: false });
+}
+
+/*
+    * @function
+    * @description : get all the hospitals that the driver can deliver citizens to
     * @param{request}[Object] : the http request object
     * @param{response}[Object] : the http response object
     * @Request header :
@@ -119,6 +162,7 @@ function saveHospital(request, response, dataKeys) {
 // Export the module
 module.exports = {
   getAllHospitals,
+  getAllHospitalsByDriver,
   getAmbulancesByHospital,
   saveHospital
 };

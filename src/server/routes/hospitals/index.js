@@ -6,6 +6,8 @@
 // Import the required modules
 const express = require('express');
 const hospitalsCitizensRouter = require('./citizens/index');
+const hospitalsdriversRouter = require('./drivers/index');
+
 const verifyRequiredFields = require('../../helpers/verifyRequiredFields');
 const { saveHospital } = require('./helpers/index');
 
@@ -14,6 +16,7 @@ const router = express.Router();
 
 // seprate routes (for different uthentication strategies)
 router.use('/citizens', hospitalsCitizensRouter.router);
+router.use('/drivers', hospitalsdriversRouter.router);
 
 /*
     * @route : POST /api/hospitals

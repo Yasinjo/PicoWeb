@@ -6,6 +6,8 @@
 // Import the required modules
 const path = require('path');
 const express = require('express');
+const passport = require('passport');
+
 const Driver = require('../../bo/driver.bo');
 const Ambulance = require('../../bo/ambulance.bo');
 const { DRIVER_PHONE_ACCOUNT_TYPE } = require('../../bo/phone_account.bo');
@@ -14,12 +16,17 @@ const verifyRequiredFields = require('../../helpers/verifyRequiredFields');
 const { uploadMiddleware, UPLOADS_PATH } = require('../../helpers/uploadPictureHelper');
 const { signupUser, signinUser } = require('../../helpers/genericRoutesHelper');
 const { AMBULANCE_NOT_FOUND } = require('../alarms/helpers/index');
+const addAuthStrategy = require('../../auth/addAuthStrategy');
 
 const DRIVERS_REPO_NAME = 'DRIVERS_REPO_NAME';
 const DRIVER_NOT_FOUND = 'Driver not found';
+const DRIVER_AUTH_STRATEGY_NAME = 'Driver-auth-strategy';
 
 // Create the router
 const router = express.Router();
+
+// Add the driver authentication strategy to the passport module
+addAuthStrategy(passport, Driver, DRIVER_AUTH_STRATEGY_NAME, false);
 
 /*
     * @route : POST /api/drivers/signup
@@ -113,5 +120,6 @@ router.use('/image', express.static(path.join(UPLOADS_PATH, DRIVERS_REPO_NAME)))
 
 module.exports = {
   router,
-  DRIVERS_REPO_NAME
+  DRIVERS_REPO_NAME,
+  DRIVER_AUTH_STRATEGY_NAME
 };
