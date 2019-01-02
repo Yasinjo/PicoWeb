@@ -1,0 +1,22 @@
+.panel > h3 {
+  margin: 0;
+  padding: 20px;
+  border-bottom: 1px solid #ddd;
+}
+
+.anchor {
+  position: relative;
+  top: -70px;
+}
+
+body {
+  position: relative;
+}
+
+.codes-table td:nth-child(2) {
+  width: 70%;
+}
+
+select:disabled {
+  opacity: 0.6;
+}
