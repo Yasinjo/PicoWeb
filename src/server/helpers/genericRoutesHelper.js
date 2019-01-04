@@ -1,11 +1,10 @@
 const _ = require('lodash');
-const jwt = require('jsonwebtoken');
 const verifyRequiredFields = require('./verifyRequiredFields');
 const { savePhoneAccount } = require('./phoneAccountHelpers');
 const { uploadPictureHelper } = require('./uploadPictureHelper');
 const { PhoneAccount } = require('../bo/phone_account.bo');
 const GenericDAO = require('../dao/genericDAO');
-const authConfig = require('../../../config/auth.json');
+const createToken = require('../auth/createToken');
 
 // Initialize constants
 const PHONE_DUPLICATION_ERROR = 'Phone number already used';
@@ -100,9 +99,9 @@ function signinUser(BOSchema, request, response, accountType, verifyAccountActiv
   validateUserAuth(BOSchema, request.body, accountType, verifyAccountActivation)
     .then((user) => {
       // If everything is correct, create a token
-      const token = jwt.sign({ _id: user._id }, authConfig.secret);
+      const token = createToken(user._id);
       // Send the token in the response
-      response.status(200).send({ success: true, token: `JWT ${token}` });
+      response.status(200).send({ success: true, token });
     }).catch(({ msg, status }) => {
       // If there is an error, send it in the response
       response.status(status).send({ success: false, msg });

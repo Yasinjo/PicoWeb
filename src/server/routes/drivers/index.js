@@ -56,7 +56,7 @@ router.post('/signup', uploadMiddleware.single('image'), (request, response) => 
 
 /*
     * @route : POST /api/drivers/signin
-    * @description : make a citizen authentication
+    * @description : make a driver authentication
     * @Request body :
       {
           phone_number : <string>{required},
