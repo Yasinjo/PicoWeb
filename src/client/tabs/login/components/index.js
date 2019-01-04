@@ -15,30 +15,55 @@ function createErrorAlert(message) {
 export default class LoginComponent extends React.Component {
   constructor(props) {
     super(props);
-    this.state = { errors: props.errors || {} };
-    this.login = React.createRef();
-    this.password = React.createRef();
-    this.rememberMe = React.createRef();
+    this.state = {
+      errors: props.errors || {},
+      login: '',
+      password: '',
+      rememberMe: ''
+    };
+
+    console.log('props and state :');
+    console.log(this.state);
+    console.log(props);
+  }
+
+  componentDidUpdate(prevProps) {
+    if (this.props.errors !== prevProps.errors) { this.setState({ errors: this.props.errors }); }
   }
 
   signIn = () => {
-    const login = this.login.current;
-    const password = this.password.current;
-    const rememberMe = this.rememberMe.current;
+    const { login, password, rememberMe } = this.state;
     const errors = {};
-    if (!login.value || !login.value.trim().length) {
+    if (!login.trim().length) {
       errors.login = REQUIRED_FIELD;
       return this.setState({ errors });
     }
 
-    if (!password.value || !password.value.trim().length) {
+    if (!password.trim().length) {
       errors.password = REQUIRED_FIELD;
       return this.setState({ errors });
     }
 
-    return this.props.signIn(login.value, password.value, rememberMe.checked);
+    return this.props.signIn(login, password, rememberMe);
   }
 
+  updateLogin = (event) => {
+    this.setState({
+      login: event.target.value
+    });
+  }
+
+  updatePassword = (event) => {
+    this.setState({
+      password: event.target.value
+    });
+  }
+
+  updateRememberMe = (event) => {
+    this.setState({
+      rememberMe: event.target.checked
+    });
+  }
 
   render() {
     const { errors } = this.state;
@@ -66,7 +91,8 @@ export default class LoginComponent extends React.Component {
                   name="login"
                   className="form-control"
                   placeholder="Login"
-                  ref={this.login}
+                  value={this.login}
+                  onChange={this.updateLogin}
                 />
               </div>
             </div>
@@ -83,7 +109,8 @@ export default class LoginComponent extends React.Component {
                   name="password"
                   className="form-control"
                   placeholder="Password"
-                  ref={this.password}
+                  onChange={this.updatePassword}
+                  value={this.password}
                 />
               </div>
             </div>
@@ -93,7 +120,7 @@ export default class LoginComponent extends React.Component {
           <div className="col-xs-6">
             <div className="checkbox">
               <label>
-                <input type="checkbox" ref={this.rememberMe} />
+                <input type="checkbox" checked={this.rememberMe} onChange={this.updateRememberMe} />
                 {'Remember me'}
               </label>
             </div>

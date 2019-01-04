@@ -11,8 +11,8 @@ class LoginContainer extends React.Component {
 
   signIn = (login, password, rememberMe) => {
     signInRequest(login, password, rememberMe)
+      .then(() => console.log('LOGGGGGED'))
       .catch((errors) => {
-        /* */
         this.setState({ errors });
       });
   };

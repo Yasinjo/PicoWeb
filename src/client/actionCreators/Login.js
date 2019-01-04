@@ -1,17 +1,19 @@
-import { GETData, POSTData } from '../helpers/apiHelper';
+import { POSTData } from '../helpers/apiHelper';
 import ActionTypes from './ActionTypes';
 
 export function signInRequest(login, password) {
   return new Promise((resolve, reject) => {
     POSTData('/api/partners/signin', { login, password }, true)
       .then((response) => {
-        console.log('response :');
-        console.log(response);
-        resolve();
+        resolve(response);
       })
       .catch((response) => {
-        console.log('response');
-        console.log(response);
+        response.json().then((jsonResponse) => {
+          console.log(response);
+          console.log(jsonResponse);
+          if (response.status === 404) { return reject({ login: jsonResponse.msg }); }
+          return reject({ password: jsonResponse.msg });
+        });
       });
   });
 }
