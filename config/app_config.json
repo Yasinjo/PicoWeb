@@ -1,0 +1,7 @@
+{
+  "SERVER_PORT": 9090,
+  "CLIENT_PORT": 3000,
+  "LOCAL_HOST": "http://localhost",
+  "WEB_HOST": "http://pico.ossrv.nl",
+  "TOKEN_LOCALSTORAGE_KEY": "TOKEN_LOCALSTORAGE_KEY"
+}

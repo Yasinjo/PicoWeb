@@ -15,6 +15,7 @@ const citizensRoutes = require('./routes/citizens/index');
 const hospitalsRoutes = require('./routes/hospitals/index');
 const alarmsRoutes = require('./routes/alarms/index');
 const driversRoutes = require('./routes/drivers/index');
+const partnersRoutes = require('./routes/partners/index');
 const ambulancesRoutes = require('./routes/ambulances/index');
 const webSockets = require('./web-sockets/index');
 const config = require('../../config/database');
@@ -41,6 +42,7 @@ apiRouter.use('/hospitals', hospitalsRoutes.router);
 apiRouter.use('/ambulances', ambulancesRoutes.router);
 apiRouter.use('/alarms', alarmsRoutes.router);
 apiRouter.use('/drivers', driversRoutes.router);
+apiRouter.use('/partners', partnersRoutes.router);
 
 // Add the logger to express app
 // Use plugins to parse the request body

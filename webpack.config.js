@@ -7,12 +7,15 @@ const CleanWebpackPlugin = require('clean-webpack-plugin');
 const {
   CLIENT_PORT,
   SERVER_PORT,
-  SERVER_HOST
+  LOCAL_HOST,
+  WEB_HOST
 } = require('./config/app_config.json');
+
+const SERVER_HOST = (process.env.WEBPACK_MODE === 'production') ? WEB_HOST : LOCAL_HOST;
+
 
 const outputDirectory = 'dist';
 
-const configDir = path.join(__dirname, 'config');
 const clientDir = path.join(__dirname, 'src', 'client');
 const publicDir = path.join(__dirname, 'public');
 const assetsBase = path.join(publicDir, 'assets');
@@ -34,10 +37,6 @@ const jsFiles = [
   'js/bootstrap.min.js',
   'js/clearmin.min.js'
 ];
-
-const tabsDir = path.resolve(clientDir, 'Tabs');
-const actionCreatorsDir = path.resolve(clientDir, 'ActionCreators');
-const reducersDir = path.resolve(clientDir, 'Reducers');
 
 module.exports = {
   entry: path.join(clientDir, '/index.js'),
@@ -71,10 +70,7 @@ module.exports = {
     open: true,
     historyApiFallback: true,
     proxy: {
-      '/api/*': {
-        target: `${SERVER_HOST}:${SERVER_PORT}`,
-        pathRewrite: { '^/api': '' }
-      }
+      '/api': `${SERVER_HOST}:${SERVER_PORT}`
     }
   },
   plugins: [
@@ -102,19 +98,7 @@ module.exports = {
   },
   resolve: {
     modules: ['node_modules'],
-    extensions: ['.js', '.jsx', '.json'],
-    alias: {
-      _config: configDir,
-      _action_creators: actionCreatorsDir,
-      _reducers: reducersDir,
-      _tabs: tabsDir,
-      _home: path.resolve(tabsDir, 'HomeTab'),
-      _codes: path.resolve(tabsDir, 'CodesTab'),
-      _items: path.resolve(tabsDir, 'ItemsTab'),
-      _variables: path.resolve(tabsDir, 'VariablesTab'),
-      _commands: path.resolve(tabsDir, 'CommandsTab'),
-      _shared: path.resolve(tabsDir, 'Shared')
-    }
+    extensions: ['.js', '.jsx', '.json']
   },
   devtool: 'source-map'
 };
