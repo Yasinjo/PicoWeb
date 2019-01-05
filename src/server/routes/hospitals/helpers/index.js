@@ -11,7 +11,6 @@ const Driver = require('../../../bo/driver.bo');
 const getToken = require('../../../helpers/getToken');
 const { extractUserObjectFromToken, extractUserIdFromToken } = require('../../../auth/tokenExtractors');
 
-
 /*
     * @function
     * @description : get all the hospitals added by a partner

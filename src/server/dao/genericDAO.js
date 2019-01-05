@@ -169,10 +169,22 @@ function findHospitalsByAmbulanceId(ambulanceId) {
 }
 
 function findHospitalsByPartnerId(partnerId) {
+  const calculateAmbulancesForHospitals = (resolve, hospitals, i) => {
+    if (i === hospitals.length) {
+      return resolve(hospitals);
+    }
+
+    return Ambulance.count({ hospital_ids: hospitals[i]._id }, (err, numberOfAmbulances) => {
+      hospitals[i]._doc.number_of_ambulances = numberOfAmbulances;
+      return calculateAmbulancesForHospitals(resolve, hospitals, i + 1);
+    });
+  };
+
   return new Promise((resolve, reject) => {
     find(Hospital, { partner_id: partnerId }, (err, hospitals) => {
       if (err) { return reject(err); }
-      return resolve(hospitals);
+
+      return calculateAmbulancesForHospitals(resolve, hospitals, 0);
     });
   });
 }
