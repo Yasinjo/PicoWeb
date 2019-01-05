@@ -9,11 +9,12 @@ const GenericDAO = require('../../../dao/genericDAO');
 const Hospital = require('../../../bo/hospital.bo');
 const Driver = require('../../../bo/driver.bo');
 const getToken = require('../../../helpers/getToken');
-const { extractUserObjectFromToken } = require('../../../auth/tokenExtractors');
+const { extractUserObjectFromToken, extractUserIdFromToken } = require('../../../auth/tokenExtractors');
+
 
 /*
     * @function
-    * @description : get all the hospitals in from the database
+    * @description : get all the hospitals added by a partner
     * @param{request}[Object] : the http request object
     * @param{response}[Object] : the http response object
     * @Request header :
@@ -21,6 +22,46 @@ const { extractUserObjectFromToken } = require('../../../auth/tokenExtractors');
     * @Response body :
       - 403
       - 500
+      - 200 :
+        { success : <boolean>,
+          hospitals : [
+            {
+                _id : <string>
+                name : <string>,
+                latitude : <number>,
+                longiude : <number>
+            }
+          ]
+        }
+*/
+function getAllHospitalsByPartner(request, response) {
+  // Get the token from the request
+  const token = getToken(request.headers);
+  // Check the token
+  if (token) {
+    return extractUserIdFromToken(token)
+      .then(partnerId => GenericDAO.findHospitalsByPartnerId(partnerId))
+      .then(hospitals => response.status(200).send({ success: true, hospitals }))
+      .catch((error) => {
+        console.log('error :');
+        console.log(error);
+        response.status(400).send({ success: false, error });
+      });
+  }
+  // If there is no token, send a 403 response
+  return response.status(403).send({ success: false });
+}
+
+/*
+    * @function
+    * @description : get all the hospitals that the driver can deliver citizens to
+    * @param{request}[Object] : the http request object
+    * @param{response}[Object] : the http response object
+    * @Request header :
+        Authorization : <string>{required} ==> The token
+    * @Response body :
+      - 403
+      - 400
       - 200 :
         { success : <boolean>,
           hospitals : [
@@ -153,16 +194,34 @@ function getAmbulancesByHospital(request, response) {
         }
 */
 function saveHospital(request, response, dataKeys) {
-  const hospital = new Hospital(_.pick(request.body, dataKeys));
-  GenericDAO.save(hospital)
-    .then(() => response.status(201).send({ success: true, hospital_id: hospital._id }))
-    .catch(error => response.status(500).send({ success: false, error }));
+  // Get the token from the request
+  const token = getToken(request.headers);
+  // Check the token
+  if (token) {
+    // If there is a token, get the partner id from the token and save the hospital
+    return extractUserIdFromToken(token)
+      .then((partnerId) => {
+        const hospitalData = _.pick(request.body, dataKeys);
+        const hospital = new Hospital({ ...hospitalData, partner_id: partnerId });
+        GenericDAO.save(hospital)
+          .then(() => response.status(201).send({ success: true, hospital_id: hospital._id }))
+          .catch(error => response.status(500).send({ success: false, error }));
+      })
+      .catch((error) => {
+        console.log('error :');
+        console.log(error);
+        response.status(400).send({ success: false, error });
+      });
+  }
+  // If there is no token, send a 403 response
+  return response.status(403).send({ success: false });
 }
 
 // Export the module
 module.exports = {
   getAllHospitals,
   getAllHospitalsByDriver,
+  getAllHospitalsByPartner,
   getAmbulancesByHospital,
   saveHospital
 };

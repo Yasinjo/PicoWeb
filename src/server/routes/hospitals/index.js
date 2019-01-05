@@ -5,8 +5,11 @@
 
 // Import the required modules
 const express = require('express');
+const passport = require('passport');
+
 const hospitalsCitizensRouter = require('./citizens/index');
-const hospitalsdriversRouter = require('./drivers/index');
+const hospitalsDriversRouter = require('./drivers/index');
+const hospitalsPartnersRouter = require('./partners/index');
 
 const verifyRequiredFields = require('../../helpers/verifyRequiredFields');
 const { saveHospital } = require('./helpers/index');
@@ -16,11 +19,16 @@ const router = express.Router();
 
 // seprate routes (for different uthentication strategies)
 router.use('/citizens', hospitalsCitizensRouter.router);
-router.use('/drivers', hospitalsdriversRouter.router);
+router.use('/drivers', hospitalsDriversRouter.router);
+router.use('/partners', hospitalsPartnersRouter.router);
+
+const { PARTNER_AUTH_STRATEGY_NAME } = require('../partners/index');
 
 /*
     * @route : POST /api/hospitals
     * @description : add a hospital
+    * @Request headers :
+      Authorization : token(string)
     * @Request body :
       {
           name : <string>{required},
@@ -33,7 +41,7 @@ router.use('/drivers', hospitalsdriversRouter.router);
       - 201 :
         { success : <boolean>, hospital_id : <string> }
 */
-router.post('/', (request, response) => {
+router.post('/', passport.authenticate(PARTNER_AUTH_STRATEGY_NAME, { session: false }), (request, response) => {
   // Initialize the required keys
   const dataKeys = ['name', 'latitude', 'longitude'];
   // Verify the required fields and save the hospital

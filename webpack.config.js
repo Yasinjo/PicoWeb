@@ -34,7 +34,7 @@ module.exports = (env, argv) => {
     'js/jquery.cookie.min.js',
     'js/fastclick.min.js',
     'js/bootstrap.min.js',
-    'js/clearmin.min.js'
+    'js/clearmin.js'
   ];
 
   const finalConfig = {
@@ -101,5 +101,6 @@ module.exports = (env, argv) => {
     },
     devtool: 'source-map'
   };
+
   return finalConfig;
 };

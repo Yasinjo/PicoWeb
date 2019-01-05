@@ -14,6 +14,11 @@ const HospitalSchema = new Schema({
     type: Schema.Types.String,
     required: true
   },
+  partner_id: {
+    type: Schema.Types.ObjectId,
+    ref: 'Partner',
+    required: true
+  },
   latitude: {
     type: Schema.Types.Number,
     required: true

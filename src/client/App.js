@@ -2,13 +2,13 @@ import React from 'react';
 import PropTypes from 'prop-types';
 import { connect } from 'react-redux';
 
-
 import Login from './tabs/login';
+import LineProgressBar from './shared/LineProgressBar';
+import MainMenu from './shared/MainMenu';
 import getTokenFromStorage from './helpers/getTokenFromStorage';
 import removeTokenFromStorage from './helpers/removeTokenFromStorage';
 import verifyToken from './helpers/verifyToken';
 import { partnerIsConnected } from './actionCreators/Login';
-
 
 const mapDispatchToProps = dispatch => ({
   updateConnection: connected => partnerIsConnected(connected, dispatch)
@@ -40,16 +40,13 @@ class AppCompoenent extends React.Component {
     }
   }
 
-
   render() {
     if (this.props.connected) {
-      // return <HospitalsTab />;
-      return <div>HospitalsTab</div>;
+      return <MainMenu init={this.props.init} />;
     }
 
     if (getTokenFromStorage() && !this.state.tokenVerified) {
-      // return <ProgressBar />;
-      return <div>ProgressBar</div>;
+      return <LineProgressBar />;
     }
 
 
@@ -63,6 +60,7 @@ AppCompoenent.defaultProps = {
 
 AppCompoenent.propTypes = {
   updateConnection: PropTypes.func.isRequired,
+  init: PropTypes.func.isRequired,
   connected: PropTypes.bool
 };
 

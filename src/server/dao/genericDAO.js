@@ -161,9 +161,18 @@ function findHospitalsByAmbulanceId(ambulanceId) {
       if (err) { return reject(err); }
       if (!ambulance) return reject('Ambulance not found');
       return find(Hospital, { _id: { $in: ambulance.hospital_ids } }, (err2, hospitals) => {
-        if (err2) { return reject(err); }
+        if (err2) { return reject(err2); }
         return resolve(hospitals);
       });
+    });
+  });
+}
+
+function findHospitalsByPartnerId(partnerId) {
+  return new Promise((resolve, reject) => {
+    find(Hospital, { partner_id: partnerId }, (err, hospitals) => {
+      if (err) { return reject(err); }
+      return resolve(hospitals);
     });
   });
 }
@@ -178,6 +187,7 @@ module.exports = {
   updateFields,
   findAvailableAmbulancesByHospital,
   findHospitalsByAmbulanceId,
+  findHospitalsByPartnerId,
   findAmbulanceDriver,
   deactivateCitizenAccount,
   saveAlarmAsFalse,

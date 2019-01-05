@@ -84,5 +84,6 @@ router.post('/validate_token', passport.authenticate(PARTNER_AUTH_STRATEGY_NAME,
 });
 
 module.exports = {
-  router
+  router,
+  PARTNER_AUTH_STRATEGY_NAME
 };
