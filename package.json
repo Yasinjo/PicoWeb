@@ -6,8 +6,8 @@
   "scripts": {
     "server-dev": "nodemon src/server/index.js",
     "server-prod": "node src/server/index.js",
-    "client-prod": "webpack-dev-server --mode production",
-    "client-dev": "webpack-dev-server --mode development --devtool inline-source-map --hot",
+    "client-prod": "webpack-dev-server --mode=production",
+    "client-dev": "webpack-dev-server --mode=development --devtool inline-source-map --hot",
     "start": "concurrently \"npm run client-prod\" \"npm run server-prod\"",
     "dev": "concurrently \"npm run server-dev\" \"npm run client-dev\"",
     "eject": "react-scripts eject"
