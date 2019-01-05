@@ -1,7 +1,7 @@
 import keyMirror from 'keymirror';
 
 const ActionTypes = keyMirror({
-  CONNECT: null
+  UPDATE_CONNECTION_STATE: null
 });
 
 export default ActionTypes;

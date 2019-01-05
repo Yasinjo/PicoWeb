@@ -1,25 +1,20 @@
-import React from 'react';
+import { connect } from 'react-redux';
 import LoginComponent from '../components/index';
-import { signInRequest } from '../../../actionCreators/Login';
+import addTokenToStorage from '../../../helpers/addTokenToStorage';
+import { signInRequest, partnerIsConnected } from '../../../actionCreators/Login';
 
-
-class LoginContainer extends React.Component {
-  constructor(props) {
-    super(props);
-    this.state = { errors: {} };
-  }
-
-  signIn = (login, password, rememberMe) => {
+const mapDispatchToProps = dispatch => ({
+  signIn: (login, password, rememberMe, setErrors) => {
     signInRequest(login, password, rememberMe)
-      .then(() => console.log('LOGGGGGED'))
-      .catch((errors) => {
-        this.setState({ errors });
-      });
-  };
-
-  render() {
-    return (<LoginComponent errors={this.state.errors} signIn={this.signIn} />);
+      .then((token) => {
+        if (rememberMe) { addTokenToStorage(token); }
+        partnerIsConnected(true, dispatch);
+      })
+      .catch(errors => setErrors(errors));
   }
-}
+});
 
-export default LoginContainer;
+export default connect(
+  null,
+  mapDispatchToProps
+)(LoginComponent);

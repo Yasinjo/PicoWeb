@@ -16,35 +16,34 @@ export default class LoginComponent extends React.Component {
   constructor(props) {
     super(props);
     this.state = {
-      errors: props.errors || {},
+      errors: {},
       login: '',
       password: '',
       rememberMe: ''
     };
-
-    console.log('props and state :');
-    console.log(this.state);
-    console.log(props);
   }
 
-  componentDidUpdate(prevProps) {
-    if (this.props.errors !== prevProps.errors) { this.setState({ errors: this.props.errors }); }
-  }
+  setErrors = (errors) => {
+    console.log('setErrors invoked');
+    console.log(errors);
+    console.log(this);
+    this.setState({ errors });
+  };
 
   signIn = () => {
     const { login, password, rememberMe } = this.state;
     const errors = {};
     if (!login.trim().length) {
       errors.login = REQUIRED_FIELD;
-      return this.setState({ errors });
+      return this.setErrors(errors);
     }
 
     if (!password.trim().length) {
       errors.password = REQUIRED_FIELD;
-      return this.setState({ errors });
+      return this.setErrors(errors);
     }
 
-    return this.props.signIn(login, password, rememberMe);
+    return this.props.signIn(login, password, rememberMe, this.setErrors);
   }
 
   updateLogin = (event) => {
@@ -133,11 +132,8 @@ export default class LoginComponent extends React.Component {
     );
   }
 }
-LoginComponent.defaultProps = {
-  errors: {}
-};
+
 
 LoginComponent.propTypes = {
-  signIn: PropTypes.func.isRequired,
-  errors: PropTypes.shape({ login: PropTypes.string, password: PropTypes.string })
+  signIn: PropTypes.func.isRequired
 };
