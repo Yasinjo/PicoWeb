@@ -1,7 +1,7 @@
 import ActionTypes from '../../actionCreators/ActionTypes';
 import { getActionType, getActionData } from '../../helpers/ActionGetters';
 
-export default function loginReducer(state = {}, action) {
+export default function hospitalsReducer(state = {}, action) {
   const data = getActionData(action);
   let newState;
   switch (getActionType(action)) {

@@ -5,6 +5,7 @@ import { composeWithDevTools } from 'redux-devtools-extension';
 import { Provider } from 'react-redux';
 import thunkMiddleware from 'redux-thunk';
 import { fetchHospitals } from './actionCreators/Hospitals';
+import { fetchAmbulances } from './actionCreators/Ambulances';
 
 import rootReducer from './reducers/index';
 import App from './App';
@@ -16,6 +17,7 @@ const store = createStore(
 
 function initData() {
   fetchHospitals(store.dispatch);
+  fetchAmbulances(store.dispatch);
 }
 
 function Main() {

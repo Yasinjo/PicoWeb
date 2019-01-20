@@ -6,9 +6,12 @@
 // Import the required modules
 const express = require('express');
 const path = require('path');
+const passport = require('passport');
+
 const verifyRequiredFields = require('../../helpers/verifyRequiredFields');
-const { saveAmbulance, AMBULANCES_REPO_NAME } = require('./helpers/index');
+const { saveAmbulance, getAmbulancesByPartner, AMBULANCES_REPO_NAME } = require('./helpers/index');
 const { uploadMiddleware, UPLOADS_PATH } = require('../../helpers/uploadPictureHelper');
+const { PARTNER_AUTH_STRATEGY_NAME } = require('../partners/index');
 
 // Create the router
 const router = express.Router();
@@ -39,6 +42,13 @@ router.post('/', uploadMiddleware.single('image'), (request, response) => {
       saveAmbulance(request, response, requiredKeys);
     });
 });
+
+/*
+    * @route : GET /api/ambulances
+    * @description : get all the ambulances added by a partner
+*/
+router.get('/', passport.authenticate(PARTNER_AUTH_STRATEGY_NAME, { session: false }),
+  (request, response) => getAmbulancesByPartner(request, response));
 
 // Image routing
 router.use('/image', express.static(path.join(UPLOADS_PATH, AMBULANCES_REPO_NAME)));

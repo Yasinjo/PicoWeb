@@ -9,6 +9,8 @@ const GenericDAO = require('../../../dao/genericDAO');
 const Ambulance = require('../../../bo/ambulance.bo');
 // const Hospital = require('../../../bo/hospital.bo');
 const { uploadPictureHelper } = require('../../../helpers/uploadPictureHelper');
+const getToken = require('../../../helpers/getToken');
+const { extractUserIdFromToken } = require('../../../auth/tokenExtractors');
 
 const AMBULANCES_REPO_NAME = 'AMBULANCES_REPO_NAME';
 
@@ -54,13 +56,26 @@ function saveAmbulance(request, response, dataKeys) {
   //     if (error || !hospital) {
   //       return response.status(400).send({ success: false, error: HOSPITAL_NOT_FOUND });
   //     }
-
   //     return save();
   //   });
   // } else save();
 }
 
+function getAmbulancesByPartner(request, response) {
+  const token = getToken(request.headers);
+  extractUserIdFromToken(token)
+    .then((partnerId) => {
+      GenericDAO.find(Ambulance, { partner_id: partnerId }, (err, ambulances) => {
+      // If there is an error, send it in response
+        if (err) response.status(500).send(err);
+        // Otherwise, send the hospitals in response
+        return response.status(200).send({ success: true, ambulances });
+      });
+    });
+}
+
 module.exports = {
   saveAmbulance,
+  getAmbulancesByPartner,
   AMBULANCES_REPO_NAME
 };
