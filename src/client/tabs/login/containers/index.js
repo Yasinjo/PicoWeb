@@ -7,7 +7,7 @@ const mapDispatchToProps = dispatch => ({
   signIn: (login, password, rememberMe, setErrors) => {
     signInRequest(login, password, rememberMe)
       .then((token) => {
-        if (rememberMe) { addTokenToStorage(token); }
+        addTokenToStorage(token, rememberMe);
         partnerIsConnected(true, dispatch);
       })
       .catch(errors => setErrors(errors));
