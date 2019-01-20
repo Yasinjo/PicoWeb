@@ -33,6 +33,15 @@ export default function loginReducer(state = {}, action) {
       delete newState[data.hospitalId];
       return newState;
 
+    case ActionTypes.ADD_HOSPITAL:
+      newState = { ...state };
+      newState[data.hospitalId] = {
+        ...data.hospitalData,
+        number_of_ambulances: 0,
+      };
+
+      return newState;
+
     default: return state;
   }
 }

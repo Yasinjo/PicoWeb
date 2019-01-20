@@ -9,11 +9,39 @@ const passport = require('passport');
 const verifyRequiredFields = require('../../../helpers/verifyRequiredFields');
 const GenericDAO = require('../../../dao/genericDAO');
 const { getAllHospitalsByPartner, updateHospital } = require('../helpers/index');
+const { saveHospital } = require('../helpers/index');
 const { PARTNER_AUTH_STRATEGY_NAME } = require('../../partners/index');
 const Hospital = require('../../../bo/hospital.bo');
 
 // Create the router
 const router = express.Router();
+
+/*
+    * @route : POST /api/hospitals
+    * @description : add a hospital
+    * @Request headers :
+      Authorization : token(string)
+    * @Request body :
+      {
+          name : <string>{required},
+          latitude : <number>{required},
+          longitude : <number>{required}
+      }
+    * @Response body :
+      - 400 :
+        { success : <boolean>, msg : <string> }
+      - 201 :
+        { success : <boolean>, hospital_id : <string> }
+*/
+router.post('/', passport.authenticate(PARTNER_AUTH_STRATEGY_NAME, { session: false }), (request, response) => {
+  // Initialize the required keys
+  const dataKeys = ['name', 'latitude', 'longitude'];
+  // Verify the required fields and save the hospital
+  verifyRequiredFields(request, response, dataKeys)
+    .then(() => {
+      saveHospital(request, response, dataKeys);
+    });
+});
 
 /*
     * @route : GET /api/hospitals/partners

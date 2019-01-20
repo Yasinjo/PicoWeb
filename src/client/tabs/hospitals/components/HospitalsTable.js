@@ -1,8 +1,10 @@
 import React from 'react';
 import HospitalMap from './HospitalMap';
 import ModifyHospitalModal from './ModifyHospitalModal';
+import AddHospitalModal from './AddHospitalModal';
 import NoResultLabel from '../../../shared/NoResultLabel';
 import Modal from '../../../shared/Modal';
+import AddItemButton from '../../../shared/AddItemButton';
 // import Button from '../../../shared/Button';
 
 
@@ -80,9 +82,23 @@ export default class HospitalsTable extends React.Component {
 
     onCloseRemoving = () => this.setState({ removeHospital: false, targetHospitalId: null });
 
+    addNewHospitalClickHandler = () => {
+      this.setState({ addNewHospital: true });
+    }
+
+    addHospitalCallback = (hospitalData) => {
+      this.props.addHospital(hospitalData);
+      this.addHospitalModalClose();
+    }
+
+    addHospitalModalClose = () => this.setState({ addNewHospital: false });
+
     render() {
       const { hospitals } = this.props;
-      const { targetHospitalId, modifyHospital, removeHospital } = this.state;
+      const {
+        targetHospitalId, modifyHospital, removeHospital, addNewHospital
+      } = this.state;
+
       const hospitalsIds = Object.keys(hospitals);
       let finalContent;
       if (hospitalsIds.length > 0) {
@@ -109,6 +125,18 @@ export default class HospitalsTable extends React.Component {
       return (
         <React.Fragment>
           {finalContent}
+          <AddItemButton onClick={this.addNewHospitalClickHandler}>
+            Add new hospital
+          </AddItemButton>
+          {
+            addNewHospital
+            && (
+              <AddHospitalModal
+                onConfirm={this.addHospitalCallback}
+                onClose={this.addHospitalModalClose}
+              />
+            )
+          }
           {
             modifyHospital
             && (
@@ -120,7 +148,6 @@ export default class HospitalsTable extends React.Component {
             />
             )
           }
-
           {
             removeHospital
             && (

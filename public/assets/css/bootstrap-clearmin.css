@@ -7896,4 +7896,5 @@ body.cm-login {
   display: block;
   height: 50px;
   background: url(../img/answers_builder.svg) no-repeat 15px center transparent;
+  text-align: center;
 }

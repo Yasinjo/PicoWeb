@@ -1,6 +1,8 @@
 import ActionTypes from './ActionTypes';
 import getTokenFromStorage from '../helpers/getTokenFromStorage';
-import { GETData, PATCHData, DELETEData } from '../helpers/apiHelper';
+import {
+  GETData, POSTData, PATCHData, DELETEData
+} from '../helpers/apiHelper';
 
 export function fetchHospitals(dispatch) {
   const token = getTokenFromStorage();
@@ -41,6 +43,27 @@ export function removeHospitalHelper(hospitalId, dispatch) {
       const action = {
         type: ActionTypes.REMOVE_HOSPITAL,
         data: { hospitalId }
+      };
+
+      dispatch(action);
+    })
+    .catch((response) => {
+      console.log('Error');
+      console.log(response);
+    });
+}
+
+export function addHospitalHelper(hospitalData, dispatch) {
+  const token = getTokenFromStorage();
+  POSTData('/api/hospitals/partners/', hospitalData, true, token)
+    .then(response => response.json())
+    .then((jsonResponse) => {
+      const action = {
+        type: ActionTypes.ADD_HOSPITAL,
+        data: {
+          hospitalId: jsonResponse.hospital_id,
+          hospitalData
+        }
       };
 
       dispatch(action);

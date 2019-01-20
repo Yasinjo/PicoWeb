@@ -1,6 +1,6 @@
 import { connect } from 'react-redux';
 import HospitalsTable from '../components/HospitalsTable';
-import { modifyHospitalHelper, removeHospitalHelper } from '../../../actionCreators/Hospitals';
+import { modifyHospitalHelper, removeHospitalHelper, addHospitalHelper } from '../../../actionCreators/Hospitals';
 
 const mapStateToProps = state => ({
   hospitals: state.hospitals
@@ -9,7 +9,8 @@ const mapStateToProps = state => ({
 const mapDispatchToProps = dispatch => ({
   modifyHospital: (hospitalId, hospitalData) => modifyHospitalHelper(dispatch,
     hospitalId, hospitalData),
-  removeHospital: hospitalId => removeHospitalHelper(hospitalId, dispatch)
+  removeHospital: hospitalId => removeHospitalHelper(hospitalId, dispatch),
+  addHospital: hospitalData => addHospitalHelper(hospitalData, dispatch)
 });
 
 export default connect(
