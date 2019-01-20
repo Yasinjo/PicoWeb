@@ -216,11 +216,20 @@ function saveHospital(request, response, dataKeys) {
   return response.status(403).send({ success: false });
 }
 
+
+function updateHospital(request, response, hospitalId, dataKeys) {
+  GenericDAO.updateFields(Hospital, { _id: hospitalId }, _.pick(request.body, dataKeys), (err) => {
+    const status = (err) ? 400 : 202;
+    response.status(status).send();
+  });
+}
+
 // Export the module
 module.exports = {
   getAllHospitals,
   getAllHospitalsByDriver,
   getAllHospitalsByPartner,
   getAmbulancesByHospital,
+  updateHospital,
   saveHospital
 };

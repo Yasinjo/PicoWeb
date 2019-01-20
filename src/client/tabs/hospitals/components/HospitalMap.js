@@ -8,9 +8,7 @@ export default class HospitalMap extends React.Component {
   constructor(props) {
     super(props);
     this.state = {
-      latitude: props.latitude,
-      longitude: props.longitude,
-      zoom: props.zoom || 12
+      zoom: props.zoom || 7
     };
   }
 
@@ -20,7 +18,6 @@ export default class HospitalMap extends React.Component {
         latitude: latLng[0],
         longitude: latLng[1]
       };
-      this.setState(newPosition);
 
       if (this.props.updatePosition) {
         this.props.updatePosition({ ...newPosition, zoom: this.state.zoom });
@@ -28,17 +25,15 @@ export default class HospitalMap extends React.Component {
     }
   }
 
-  getCurrentPosition = () => ({ latitude: this.state.latitude, longitude: this.state.longitude });
-
   zoomChange=(obj) => {
     this.setState({ zoom: obj.zoom });
   }
 
   render() {
-    const {
-      longitude, latitude, zoom
-    } = this.state;
+    const { zoom } = this.state;
+    const { longitude, latitude } = this.props;
     const position = [latitude, longitude];
+
     return (
       <div>
         <Map

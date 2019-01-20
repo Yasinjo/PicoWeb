@@ -18,6 +18,21 @@ export default function loginReducer(state = {}, action) {
 
       return newState;
 
+    case ActionTypes.MODIFY_HOSPITAL:
+      newState = { ...state };
+      const nbAmbulances = newState[data.hospitalId].number_of_ambulances;
+      newState[data.hospitalId] = {
+        ...data.hospitalData,
+        number_of_ambulances: nbAmbulances
+      };
+
+      return newState;
+
+    case ActionTypes.REMOVE_HOSPITAL:
+      newState = { ...state };
+      delete newState[data.hospitalId];
+      return newState;
+
     default: return state;
   }
 }

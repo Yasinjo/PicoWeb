@@ -10,8 +10,6 @@ export function signInRequest(login, password) {
       .then(jsonSuccessResponse => resolve(jsonSuccessResponse.token))
       .catch((response) => {
         response.json().then((jsonResponse) => {
-          console.log(response);
-          console.log(jsonResponse);
           if (response.status === 404) { return reject({ login: jsonResponse.msg }); }
           return reject({ password: jsonResponse.msg });
         });

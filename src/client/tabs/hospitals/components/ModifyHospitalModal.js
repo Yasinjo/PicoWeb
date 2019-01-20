@@ -55,7 +55,8 @@ export default class ModifyHospitalModal extends React.Component {
     const {
       name, latitude, longitude, errors, mapZoom
     } = this.state;
-    console.log(`name : ${name}`);
+    const { onClose } = this.props;
+
     const fields = (
       <React.Fragment>
         <div className={this.createDivClassName('name')}>
@@ -90,8 +91,9 @@ export default class ModifyHospitalModal extends React.Component {
         </div>
       </React.Fragment>
     );
+
     return (
-      <Modal title="Add a hospital" onConfirm={this.onConfirmModal} cofirmEnabled>
+      <Modal title="Add a hospital" onConfirm={this.onConfirmModal} onClose={onClose} cofirmEnabled>
         <form className="form-horizontal">
           {fields}
         </form>

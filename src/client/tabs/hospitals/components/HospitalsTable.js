@@ -2,6 +2,7 @@ import React from 'react';
 import HospitalMap from './HospitalMap';
 import ModifyHospitalModal from './ModifyHospitalModal';
 import NoResultLabel from '../../../shared/NoResultLabel';
+import Modal from '../../../shared/Modal';
 // import Button from '../../../shared/Button';
 
 
@@ -19,12 +20,17 @@ export default class HospitalsTable extends React.Component {
     modifyClickHandler = (event) => {
       const hospitalId = event.currentTarget.getAttribute('uid');
       event.preventDefault();
-      if (this.props.hospitals[hospitalId]) { this.setState({ modifyHospital: true, targetHospitalId: hospitalId }); }
+      if (this.props.hospitals[hospitalId]) {
+        this.setState({ modifyHospital: true, targetHospitalId: hospitalId });
+      }
     };
 
     removeClickHandler = (event) => {
       const hospitalId = event.currentTarget.getAttribute('uid');
       event.preventDefault();
+      if (this.props.hospitals[hospitalId]) {
+        this.setState({ removeHospital: true, targetHospitalId: hospitalId });
+      }
     };
 
     createHosiptalRow = (hospitalId, hospitalData) => (
@@ -60,11 +66,23 @@ export default class HospitalsTable extends React.Component {
       console.log(`hospitalId ${hospitalId}`);
       console.log('hospitalData :');
       console.log(hospitalData);
+
+      this.props.modifyHospital(hospitalId, hospitalData);
+      this.modifyHospitalClose();
     }
+
+    modifyHospitalClose = () => this.setState({ modifyHospital: false, targetHospitalId: null });
+
+    onConfirmRemoving = () => {
+      this.props.removeHospital(this.state.targetHospitalId);
+      this.onCloseRemoving();
+    }
+
+    onCloseRemoving = () => this.setState({ removeHospital: false, targetHospitalId: null });
 
     render() {
       const { hospitals } = this.props;
-      const { targetHospitalId, modifyHospital } = this.state;
+      const { targetHospitalId, modifyHospital, removeHospital } = this.state;
       const hospitalsIds = Object.keys(hospitals);
       let finalContent;
       if (hospitalsIds.length > 0) {
@@ -96,9 +114,24 @@ export default class HospitalsTable extends React.Component {
             && (
             <ModifyHospitalModal
               onConfirm={this.modifyHospitalCallback}
+              onClose={this.modifyHospitalClose}
               hospitalId={targetHospitalId}
               hospitalData={hospitals[targetHospitalId]}
             />
+            )
+          }
+
+          {
+            removeHospital
+            && (
+              <Modal
+                title="Remove a hospital"
+                onConfirm={this.onConfirmRemoving}
+                onClose={this.onCloseRemoving}
+                cofirmEnabled
+              >
+                Are you sure ?
+              </Modal>
             )
           }
         </React.Fragment>

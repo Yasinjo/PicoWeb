@@ -6,8 +6,11 @@
 // Import the required modules
 const express = require('express');
 const passport = require('passport');
-const { getAllHospitalsByPartner } = require('../helpers/index');
+const verifyRequiredFields = require('../../../helpers/verifyRequiredFields');
+const GenericDAO = require('../../../dao/genericDAO');
+const { getAllHospitalsByPartner, updateHospital } = require('../helpers/index');
 const { PARTNER_AUTH_STRATEGY_NAME } = require('../../partners/index');
+const Hospital = require('../../../bo/hospital.bo');
 
 // Create the router
 const router = express.Router();
@@ -19,6 +22,36 @@ const router = express.Router();
 router.get('/', passport.authenticate(PARTNER_AUTH_STRATEGY_NAME, { session: false }),
   (request, response) => getAllHospitalsByPartner(request, response));
 
+
+/*
+    * @route : PATCH /api/hospitals/partners/:hospital_id
+    * @description : update the data of a hospital
+*/
+router.patch('/:hospital_id', passport.authenticate(PARTNER_AUTH_STRATEGY_NAME, { session: false }),
+  (request, response) => {
+    // Initialize the required keys
+    const requiredKeys = ['name', 'latitude', 'longitude'];
+    // Verify the required fields and save the ambulance
+    verifyRequiredFields(request, response, requiredKeys)
+      .then(() => {
+        updateHospital(request, response, request.params.hospital_id, requiredKeys);
+      });
+  });
+
+/*
+    * @route : DELETE /api/hospitals/partners/:hospital_id
+    * @description : delete a hospital
+*/
+router.delete('/:hospital_id', passport.authenticate(PARTNER_AUTH_STRATEGY_NAME, { session: false }),
+  (request, response) => {
+    GenericDAO.remove(Hospital, { _id: request.params.hospital_id })
+      .then(response.status(200).send())
+      .catch((err) => {
+        console.log('DELETE /api/hospitals/partners/:hospital_id error :');
+        console.log(err);
+        response.status(400).send();
+      });
+  });
 
 // Export the module
 module.exports = {
