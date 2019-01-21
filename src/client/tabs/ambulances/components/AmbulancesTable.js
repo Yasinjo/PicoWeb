@@ -1,12 +1,15 @@
 import React from 'react';
 import NoResultLabel from '../../../shared/NoResultLabel';
 import ModifyAmbulanceModal from './ModifyAmbulanceModal';
+import AddAmbulanceModal from './AddAmbulanceModal';
 import Modal from '../../../shared/Modal';
+import AddItemButton from '../../../shared/AddItemButton';
 
 const NO_IMAGE_AVAILABLE_SRC = '../img/no_image_available.jpg';
 const CENTERED_TEXT_STYLE = { textAlign: 'center' };
 
 function onErrorImageLoading(e) {
+  e.preventDefault();
   e.currentTarget.src = NO_IMAGE_AVAILABLE_SRC;
 }
 
@@ -52,6 +55,10 @@ export default class AmbulancesTable extends React.Component {
     if (this.props.ambulances[ambulanceId]) {
       this.setState({ removeAmbulance: true, targetAmbulanceId: ambulanceId });
     }
+  }
+
+  addNewAmbulanceClickHandler = () => {
+    this.setState({ addNewAmbulance: true });
   }
 
   createAmbulanceRow = (ambulanceId, ambulanceData) => {
@@ -103,9 +110,20 @@ export default class AmbulancesTable extends React.Component {
 
   onCloseRemoving = () => this.setState({ removeAmbulance: false, targetAmbulanceId: null });
 
+  addAmbulanceOnConfirm = (ambulanceData) => {
+    this.props.addAmbulance(ambulanceData);
+    this.addAmbulanceOnClose();
+  }
+
+  addAmbulanceOnClose = () => {
+    this.setState({ addNewAmbulance: false });
+  }
+
   render() {
     const { ambulances, drivers, hospitals } = this.props;
-    const { modifyAmbulance, removeAmbulance, targetAmbulanceId } = this.state;
+    const {
+      modifyAmbulance, removeAmbulance, addNewAmbulance, targetAmbulanceId
+    } = this.state;
 
     const ambulancesIds = Object.keys(ambulances);
     let finalContent;
@@ -136,6 +154,9 @@ export default class AmbulancesTable extends React.Component {
     return (
       <React.Fragment>
         {finalContent}
+        <AddItemButton onClick={this.addNewAmbulanceClickHandler}>
+            Add new Ambulance
+        </AddItemButton>
 
         {
           modifyAmbulance
@@ -162,6 +183,18 @@ export default class AmbulancesTable extends React.Component {
             >
               Are you sure ?
             </Modal>
+          )
+        }
+
+        {
+          addNewAmbulance
+          && (
+          <AddAmbulanceModal
+            onConfirm={this.addAmbulanceOnConfirm}
+            onClose={this.addAmbulanceOnClose}
+            drivers={drivers}
+            hospitals={hospitals}
+          />
           )
         }
       </React.Fragment>

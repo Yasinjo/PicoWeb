@@ -4,6 +4,7 @@ import { getActionType, getActionData } from '../../helpers/ActionGetters';
 export default function ambulancesReducer(state = {}, action) {
   const data = getActionData(action);
   let newState;
+  let ambulanceInfo;
   switch (getActionType(action)) {
     case ActionTypes.FETCH_AMBULANCES:
       newState = {};
@@ -19,11 +20,11 @@ export default function ambulancesReducer(state = {}, action) {
 
     case ActionTypes.MODIFY_AMBULANCE:
       newState = { ...state };
-      const { ambulanceData } = data;
+      ambulanceInfo = data.ambulanceData;
       newState[data.ambulanceId] = {
-        registration_number: ambulanceData.registration_number,
-        hospital_ids: ambulanceData.hospital_ids,
-        driver_id: ambulanceData.driver_id
+        registration_number: ambulanceInfo.registration_number,
+        hospital_ids: ambulanceInfo.hospital_ids,
+        driver_id: ambulanceInfo.driver_id
       };
 
       return newState;
@@ -31,6 +32,16 @@ export default function ambulancesReducer(state = {}, action) {
     case ActionTypes.REMOVE_AMBULANCE:
       newState = { ...state };
       delete newState[data.ambulanceId];
+      return newState;
+
+    case ActionTypes.ADD_AMBULANCE:
+      newState = { ...state };
+      ambulanceInfo = data.ambulanceData;
+      newState[data.ambulanceId] = {
+        registration_number: ambulanceInfo.registration_number,
+        hospital_ids: ambulanceInfo.hospital_ids,
+        driver_id: ambulanceInfo.driver_id
+      };
       return newState;
 
     default: return state;

@@ -38,7 +38,7 @@ const router = express.Router();
 router.post('/', passport.authenticate(PARTNER_AUTH_STRATEGY_NAME, { session: false }),
   uploadMiddleware.single('image'), (request, response) => {
   // Initialize the required keys
-    const requiredKeys = ['registration_number', 'latitude', 'longitude', 'hospital_ids'];
+    const requiredKeys = ['registration_number', 'hospital_ids'];
     // Verify the required fields and save the ambulance
     verifyRequiredFields(request, response, requiredKeys)
       .then(() => {

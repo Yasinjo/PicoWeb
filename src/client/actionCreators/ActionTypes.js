@@ -8,7 +8,8 @@ const ActionTypes = keyMirror({
   REMOVE_HOSPITAL: null,
   ADD_HOSPITAL: null,
   MODIFY_AMBULANCE: null,
-  REMOVE_AMBULANCE: null
+  REMOVE_AMBULANCE: null,
+  ADD_AMBULANCE: null
 });
 
 export default ActionTypes;

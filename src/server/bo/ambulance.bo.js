@@ -21,11 +21,11 @@ const AmbulanceSchema = new Schema({
   },
   latitude: {
     type: Schema.Types.Number,
-    required: true
+    default: -7
   },
   longitude: {
     type: Schema.Types.Number,
-    required: true
+    default: 33
   },
   partner_id: {
     type: Schema.Types.ObjectId,
