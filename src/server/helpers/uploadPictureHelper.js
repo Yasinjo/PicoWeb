@@ -30,6 +30,8 @@ function uploadPictureHelper(imageBuffer, imageNewFileName, directoryName, callb
   const newPath = `${parentDir}/${imageNewFileName}.${DEFAULT_EXTENSION}`;
   // Create the parent directory if it doesn't exist
   if (!fs.existsSync(parentDir)) fs.mkdirSync(parentDir);
+  // Remove the file if it already exists
+  if (fs.existsSync(newPath)) { fs.unlinkSync(newPath); }
   // Create the file
   fs.writeFile(newPath, imageBuffer, callback);
 }

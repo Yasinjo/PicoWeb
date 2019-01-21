@@ -9,7 +9,9 @@ const path = require('path');
 const passport = require('passport');
 
 const verifyRequiredFields = require('../../helpers/verifyRequiredFields');
-const { saveAmbulance, getAmbulancesByPartner, AMBULANCES_REPO_NAME } = require('./helpers/index');
+const {
+  saveAmbulance, getAmbulancesByPartner, updateAmbulance, deleteAmbulance, AMBULANCES_REPO_NAME
+} = require('./helpers/index');
 const { uploadMiddleware, UPLOADS_PATH } = require('../../helpers/uploadPictureHelper');
 const { PARTNER_AUTH_STRATEGY_NAME } = require('../partners/index');
 
@@ -33,15 +35,16 @@ const router = express.Router();
       - 201 :
         { success : <boolean>, ambulance_id : <string> }
 */
-router.post('/', uploadMiddleware.single('image'), (request, response) => {
+router.post('/', passport.authenticate(PARTNER_AUTH_STRATEGY_NAME, { session: false }),
+  uploadMiddleware.single('image'), (request, response) => {
   // Initialize the required keys
-  const requiredKeys = ['registration_number', 'latitude', 'longitude', 'hospital_ids'];
-  // Verify the required fields and save the ambulance
-  verifyRequiredFields(request, response, requiredKeys)
-    .then(() => {
-      saveAmbulance(request, response, requiredKeys);
-    });
-});
+    const requiredKeys = ['registration_number', 'latitude', 'longitude', 'hospital_ids'];
+    // Verify the required fields and save the ambulance
+    verifyRequiredFields(request, response, requiredKeys)
+      .then(() => {
+        saveAmbulance(request, response, requiredKeys);
+      });
+  });
 
 /*
     * @route : GET /api/ambulances
@@ -49,6 +52,32 @@ router.post('/', uploadMiddleware.single('image'), (request, response) => {
 */
 router.get('/', passport.authenticate(PARTNER_AUTH_STRATEGY_NAME, { session: false }),
   (request, response) => getAmbulancesByPartner(request, response));
+
+/*
+    * @route : PATCH /api/ambulances/:ambulance_id
+    * @description : update the data of an ambulance
+*/
+router.patch('/:ambulance_id', passport.authenticate(PARTNER_AUTH_STRATEGY_NAME, { session: false }), uploadMiddleware.single('image'),
+  (request, response) => {
+    // Initialize the required keys
+    const requiredKeys = ['registration_number', 'hospital_ids'];
+    // Verify the required fields and save the ambulance
+    verifyRequiredFields(request, response, requiredKeys)
+      .then(() => {
+        updateAmbulance(request, response, request.params.ambulance_id, requiredKeys);
+      });
+  });
+
+
+/*
+    * @route : DELETE /api/ambulances/:ambulance_id
+    * @description : delete a hospital
+*/
+router.delete('/:ambulance_id', passport.authenticate(PARTNER_AUTH_STRATEGY_NAME, { session: false }),
+  (request, response) => {
+    const ambulanceId = request.params.ambulance_id;
+    deleteAmbulance(request, response, ambulanceId);
+  });
 
 // Image routing
 router.use('/image', express.static(path.join(UPLOADS_PATH, AMBULANCES_REPO_NAME)));

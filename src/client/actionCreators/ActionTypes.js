@@ -6,7 +6,9 @@ const ActionTypes = keyMirror({
   FETCH_AMBULANCES: null,
   MODIFY_HOSPITAL: null,
   REMOVE_HOSPITAL: null,
-  ADD_HOSPITAL: null
+  ADD_HOSPITAL: null,
+  MODIFY_AMBULANCE: null,
+  REMOVE_AMBULANCE: null
 });
 
 export default ActionTypes;

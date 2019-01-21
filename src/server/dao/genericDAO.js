@@ -82,6 +82,25 @@ function updateFields(businessSchema, selector, updates, callback) {
   businessSchema.update(selector, { $set: updates }, callback);
 }
 
+function removeFields(businessSchema, selector, fieldsToRemove, callback) {
+  find(businessSchema, selector, (err, instances) => {
+    if (err || !instances) { return callback(err); }
+    for (let i = 0; i < instances.length; i += 1) {
+      console.log(instances[i]);
+      for (let j = 0; j < fieldsToRemove.length; j += 1) {
+        const field = fieldsToRemove[j];
+        console.log(field);
+        instances[i].set(field, undefined, { strict: false });
+        // instances[i][field] = undefined;
+      }
+
+      instances[i].save();
+    }
+
+    return callback();
+  });
+}
+
 const findAmbulanceDriver = ambulanceId => new Promise((resolve, reject) => {
   findOne(Driver, { ambulance_id: ambulanceId }, (err, driver) => {
     if (err || !driver) return reject(err);
@@ -183,7 +202,6 @@ function findHospitalsByPartnerId(partnerId) {
   return new Promise((resolve, reject) => {
     find(Hospital, { partner_id: partnerId }, (err, hospitals) => {
       if (err) { return reject(err); }
-
       return calculateAmbulancesForHospitals(resolve, hospitals, 0);
     });
   });
@@ -197,6 +215,7 @@ module.exports = {
   remove,
   findOne,
   updateFields,
+  removeFields,
   findAvailableAmbulancesByHospital,
   findHospitalsByAmbulanceId,
   findHospitalsByPartnerId,

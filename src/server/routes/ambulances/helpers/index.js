@@ -7,6 +7,7 @@
 const _ = require('lodash');
 const GenericDAO = require('../../../dao/genericDAO');
 const Ambulance = require('../../../bo/ambulance.bo');
+const Driver = require('../../../bo/driver.bo');
 // const Hospital = require('../../../bo/hospital.bo');
 const { uploadPictureHelper } = require('../../../helpers/uploadPictureHelper');
 const getToken = require('../../../helpers/getToken');
@@ -39,26 +40,34 @@ const AMBULANCES_REPO_NAME = 'AMBULANCES_REPO_NAME';
         }
 */
 function saveAmbulance(request, response, dataKeys) {
-  const ambulance = new Ambulance(_.pick(request.body, dataKeys));
-  GenericDAO.save(ambulance)
-    .then(() => {
-      // Upload the image file (if there is an image), and send the response
-      if (request.file && request.file.buffer) {
-        uploadPictureHelper(request.file.buffer, ambulance._id, AMBULANCES_REPO_NAME,
-          () => response.status(201).json({ success: true, ambulance_id: ambulance._id }));
-      } else { response.status(201).json({ success: true, ambulance_id: ambulance._id }); }
-    })
-    .catch(error => response.status(500).send({ success: false, error }));
+  // Get the token from the request
+  const token = getToken(request.headers);
+  // Check the token
+  if (token) {
+    // If there is a token, get the partner id from the token and save the hospital
+    return extractUserIdFromToken(token)
+      .then((partnerId) => {
+        const ambulanceData = _.pick(request.body, dataKeys);
+        const ambulance = new Ambulance({ ...ambulanceData, partner_id: partnerId });
+        GenericDAO.save(ambulance)
+          .then(() => {
+            // Upload the image file (if there is an image), and send the response
+            if (request.file && request.file.buffer) {
+              uploadPictureHelper(request.file.buffer, ambulance._id, AMBULANCES_REPO_NAME,
+                () => response.status(201).json({ success: true, ambulance_id: ambulance._id }));
+            } else { response.status(201).json({ success: true, ambulance_id: ambulance._id }); }
+          })
+          .catch(error => response.status(500).send({ success: false, error }));
+      })
+      .catch((error) => {
+        console.log('saveAmbulance error :');
+        console.log(error);
+        response.status(400).send({ success: false, error });
+      });
+  }
 
-  // Check if the hospital exists
-  // if (request.body.hospital_id) {
-  //   GenericDAO.findOne(Hospital, { _id: request.body.hospital_id }, (error, hospital) => {
-  //     if (error || !hospital) {
-  //       return response.status(400).send({ success: false, error: HOSPITAL_NOT_FOUND });
-  //     }
-  //     return save();
-  //   });
-  // } else save();
+  // If there is no token, send a 403 response
+  return response.status(403).send({ success: false });
 }
 
 function getAmbulancesByPartner(request, response) {
@@ -74,8 +83,81 @@ function getAmbulancesByPartner(request, response) {
     });
 }
 
+function updateAmbulanceDriver(ambulanceId, driverId) {
+  GenericDAO.removeFields(Driver, { ambulance_id: ambulanceId }, ['ambulance_id'], () => {
+    if (driverId) {
+      GenericDAO.updateFields(Driver, { _id: driverId }, { ambulance_id: ambulanceId }, () => {});
+    }
+  });
+}
+
+function updateAmbulance(request, response, ambulanceId, dataKeys) {
+  const token = getToken(request.headers);
+  extractUserIdFromToken(token)
+    .then((partnerId) => {
+      const ambulanceData = _.pick(request.body, [...dataKeys, 'driver_id']);
+      GenericDAO.findOne(Ambulance, { _id: ambulanceId, partner_id: partnerId },
+        (err, ambulance) => {
+          // If there is an error, send it in response
+          if (err || !ambulance) response.status(400).send({ error: 'Ambulance not found' });
+          GenericDAO.updateFields(Ambulance, { _id: ambulanceId }, _.pick(ambulanceData, dataKeys),
+            (err2) => {
+              if (request.file && request.file.buffer) {
+                uploadPictureHelper(request.file.buffer, ambulance._id,
+                  AMBULANCES_REPO_NAME, () => {});
+              }
+
+              updateAmbulanceDriver(ambulanceId, ambulanceData.driver_id);
+              if (err2) {
+                response.status(400).send({ error: 'Update error', msg: err2 });
+              } else {
+                response.status(202).send();
+              }
+            });
+        });
+    });
+}
+
+function verifyPartnerRightOnAmbulance(request, ambulanceId) {
+  // Get the token from the request
+  const token = getToken(request.headers);
+  console.log('1 : ');
+  // verify the rights
+  return new Promise((resolve, reject) => {
+    extractUserIdFromToken(token)
+      .then((partnerId) => {
+        GenericDAO.findOne(Ambulance, { _id: ambulanceId, partner_id: partnerId },
+          (err, ambulance) => {
+            console.log('2 : ');
+            console.log(err);
+            console.log(ambulance);
+
+            if (err || !ambulance) { return reject(); }
+            return resolve();
+          });
+      });
+  });
+}
+
+function deleteAmbulance(request, response, ambulanceId) {
+  verifyPartnerRightOnAmbulance(request, ambulanceId).then(() => {
+    GenericDAO.removeFields(Driver, { ambulance_id: ambulanceId }, ['ambulance_id'], () => {
+      console.log('3 : ');
+      GenericDAO.remove(Ambulance, { _id: ambulanceId })
+        .then(response.status(200).send())
+        .catch((err) => {
+          console.log('DELETE /api/ambulances/:ambulance_id error :');
+          console.log(err);
+          response.status(400).send();
+        });
+    });
+  }).catch(() => response.status(400).send());
+}
+
 module.exports = {
   saveAmbulance,
+  deleteAmbulance,
   getAmbulancesByPartner,
+  updateAmbulance,
   AMBULANCES_REPO_NAME
 };

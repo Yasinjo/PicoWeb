@@ -7,11 +7,9 @@
 const express = require('express');
 const passport = require('passport');
 const verifyRequiredFields = require('../../../helpers/verifyRequiredFields');
-const GenericDAO = require('../../../dao/genericDAO');
 const { getAllHospitalsByPartner, updateHospital } = require('../helpers/index');
-const { saveHospital } = require('../helpers/index');
+const { saveHospital, deleteHospital } = require('../helpers/index');
 const { PARTNER_AUTH_STRATEGY_NAME } = require('../../partners/index');
-const Hospital = require('../../../bo/hospital.bo');
 
 // Create the router
 const router = express.Router();
@@ -72,13 +70,7 @@ router.patch('/:hospital_id', passport.authenticate(PARTNER_AUTH_STRATEGY_NAME, 
 */
 router.delete('/:hospital_id', passport.authenticate(PARTNER_AUTH_STRATEGY_NAME, { session: false }),
   (request, response) => {
-    GenericDAO.remove(Hospital, { _id: request.params.hospital_id })
-      .then(response.status(200).send())
-      .catch((err) => {
-        console.log('DELETE /api/hospitals/partners/:hospital_id error :');
-        console.log(err);
-        response.status(400).send();
-      });
+    deleteHospital(request, response, request.params.hospital_id);
   });
 
 // Export the module

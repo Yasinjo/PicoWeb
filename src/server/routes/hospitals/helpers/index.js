@@ -216,12 +216,42 @@ function saveHospital(request, response, dataKeys) {
   return response.status(403).send({ success: false });
 }
 
+function verifyPartnerRightOnHospital(request, hospitalId) {
+  // Get the token from the request
+  const token = getToken(request.headers);
+  // verify the rights
+  return new Promise((resolve, reject) => {
+    extractUserIdFromToken(token)
+      .then((partnerId) => {
+        GenericDAO.findOne(Hospital, { _id: hospitalId, partner_id: partnerId },
+          (err, hospital) => {
+            if (err || !hospital) { return reject(); }
+            return resolve();
+          });
+      });
+  });
+}
 
 function updateHospital(request, response, hospitalId, dataKeys) {
-  GenericDAO.updateFields(Hospital, { _id: hospitalId }, _.pick(request.body, dataKeys), (err) => {
-    const status = (err) ? 400 : 202;
-    response.status(status).send();
-  });
+  verifyPartnerRightOnHospital(request, hospitalId).then(() => {
+    GenericDAO.updateFields(Hospital, { _id: hospitalId }, _.pick(request.body, dataKeys),
+      (err) => {
+        const status = (err) ? 400 : 202;
+        response.status(status).send();
+      });
+  }).catch(() => response.status(400).send());
+}
+
+function deleteHospital(request, response, hospitalId) {
+  verifyPartnerRightOnHospital(request, hospitalId).then(() => {
+    GenericDAO.remove(Hospital, { _id: request.params.hospital_id })
+      .then(response.status(200).send())
+      .catch((err) => {
+        console.log('DELETE /api/hospitals/partners/:hospital_id error :');
+        console.log(err);
+        response.status(400).send();
+      });
+  }).catch(() => response.status(400).send());
 }
 
 // Export the module
@@ -231,5 +261,6 @@ module.exports = {
   getAllHospitalsByPartner,
   getAmbulancesByHospital,
   updateHospital,
-  saveHospital
+  saveHospital,
+  deleteHospital
 };

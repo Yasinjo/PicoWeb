@@ -31,7 +31,7 @@ export function modifyHospitalHelper(dispatch, hospitalId, hospitalData) {
       dispatch(action);
     })
     .catch((response) => {
-      console.log('Error');
+      console.log('modifyHospitalHelper Error');
       console.log(response);
     });
 }

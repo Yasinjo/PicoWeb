@@ -17,6 +17,22 @@ export default function ambulancesReducer(state = {}, action) {
 
       return newState;
 
+    case ActionTypes.MODIFY_AMBULANCE:
+      newState = { ...state };
+      const { ambulanceData } = data;
+      newState[data.ambulanceId] = {
+        registration_number: ambulanceData.registration_number,
+        hospital_ids: ambulanceData.hospital_ids,
+        driver_id: ambulanceData.driver_id
+      };
+
+      return newState;
+
+    case ActionTypes.REMOVE_AMBULANCE:
+      newState = { ...state };
+      delete newState[data.ambulanceId];
+      return newState;
+
     default: return state;
   }
 }
