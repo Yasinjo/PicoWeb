@@ -15,15 +15,16 @@ const GenericDAO = require('../../dao/genericDAO');
 const verifyRequiredFields = require('../../helpers/verifyRequiredFields');
 const { uploadMiddleware, UPLOADS_PATH } = require('../../helpers/uploadPictureHelper');
 const { signupUser, signinUser } = require('../../helpers/genericRoutesHelper');
-const { getDriversByPartner } = require('./helpers/index');
+const { getDriversByPartner, updateDriver } = require('./helpers/index');
 const { AMBULANCE_NOT_FOUND } = require('../alarms/helpers/index');
 const addAuthStrategy = require('../../auth/addAuthStrategy');
 
-const DRIVERS_REPO_NAME = 'DRIVERS_REPO_NAME';
 const DRIVER_NOT_FOUND = 'Driver not found';
 const DRIVER_AUTH_STRATEGY_NAME = 'Driver-auth-strategy';
 const { PARTNER_AUTH_STRATEGY_NAME } = require('../partners/index');
 
+
+const DRIVERS_REPO_NAME = 'DRIVERS_REPO_NAME';
 // Create the router
 const router = express.Router();
 
@@ -124,6 +125,21 @@ router.patch('/:driver_id/ambulance', uploadMiddleware.single('image'), (request
 */
 router.get('/', passport.authenticate(PARTNER_AUTH_STRATEGY_NAME, { session: false }),
   (request, response) => getDriversByPartner(request, response));
+
+/*
+    * @route : PATCH /api/drivers/:driver_id
+    * @description : update the data of a driver
+*/
+router.patch('/:driver_id', passport.authenticate(PARTNER_AUTH_STRATEGY_NAME, { session: false }), uploadMiddleware.single('image'),
+  (request, response) => {
+  // Initialize the required keys
+    const requiredKeys = ['full_name', 'phone_number'];
+    // Verify the required fields and update the driver
+    verifyRequiredFields(request, response, requiredKeys)
+      .then(() => {
+        updateDriver(request, response, request.params.driver_id);
+      });
+  });
 
 // Image routing
 router.use('/image', express.static(path.join(UPLOADS_PATH, DRIVERS_REPO_NAME)));

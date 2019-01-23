@@ -1,5 +1,6 @@
 import ActionTypes from './ActionTypes';
 import getTokenFromStorage from '../helpers/getTokenFromStorage';
+import objectDataToFormData from '../helpers/objectDataToFormData';
 import {
   GETData, POSTData, PATCHData, DELETEData
 } from '../helpers/apiHelper';
@@ -22,6 +23,28 @@ export function fetchDrivers(dispatch) {
 
 export function modifyDriverHelper(dispatch, driverId, driverData) {
   return new Promise((resolve, reject) => {
-    reject(PHONE_NUMBER_ALREADY_EXISTS);
+    const token = getTokenFromStorage();
+    const data = objectDataToFormData(driverData);
+
+    PATCHData(`/api/drivers/${driverId}`, data, false, token)
+      .then(() => {
+        if (driverData.image) { return window.location.reload(); }
+
+        const action = {
+          type: ActionTypes.MODIFY_DRIVER,
+          data: {
+            driverId, driverData
+          }
+        };
+
+        dispatch(action);
+
+        return resolve();
+      })
+      .catch((response) => {
+        console.log('modifyDriverHelper Error');
+        console.log(response);
+        reject(PHONE_NUMBER_ALREADY_EXISTS);
+      });
   });
 }

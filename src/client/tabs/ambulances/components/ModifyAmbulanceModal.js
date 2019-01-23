@@ -4,6 +4,8 @@ import uuid4 from 'uuid/v4';
 import Modal from '../../../shared/Modal';
 import { REQUIRED_FIELD } from '../../../constants.json';
 
+const noDriverValue = uuid4();
+
 export default class ModifyAmbulanceModal extends React.Component {
   constructor(props) {
     super(props);
@@ -11,7 +13,7 @@ export default class ModifyAmbulanceModal extends React.Component {
     this.fileUploadRef = React.createRef();
     this.state = {
       registrationNumber: ambulanceData.registration_number,
-      currentDriver: ambulanceData.driver_id || '',
+      currentDriver: ambulanceData.driver_id || noDriverValue,
       handledHospitals: ambulanceData.hospital_ids,
       errors: {}
     };
@@ -118,7 +120,7 @@ export default class ModifyAmbulanceModal extends React.Component {
           </label>
           <div className="col-sm-8">
             <select defaultValue={currentDriver} className="form-control" onChange={this.handleDriverChange}>
-              <option key={uuid4()}>No driver is selected</option>
+              <option value={noDriverValue}>No driver is selected</option>
               {this.createDriversOptions()}
             </select>
           </div>

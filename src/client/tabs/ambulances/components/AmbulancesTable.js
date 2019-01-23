@@ -1,4 +1,6 @@
 import React from 'react';
+import uuid4 from 'uuid/v4';
+
 import NoResultLabel from '../../../shared/NoResultLabel';
 import ModifyAmbulanceModal from './ModifyAmbulanceModal';
 import AddAmbulanceModal from './AddAmbulanceModal';
@@ -15,7 +17,7 @@ function onErrorImageLoading(e) {
 
 function createImageElement(imageSrc) {
   return (
-    <img src={imageSrc} alt="ambulance" width="150" height="150" onError={onErrorImageLoading} />
+    <img src={imageSrc} key={uuid4()} alt="ambulance" width="150" height="150" onError={onErrorImageLoading} />
   );
 }
 

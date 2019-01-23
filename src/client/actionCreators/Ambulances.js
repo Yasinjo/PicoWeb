@@ -1,24 +1,10 @@
 import ActionTypes from './ActionTypes';
 import getTokenFromStorage from '../helpers/getTokenFromStorage';
+import objectDataToFormData from '../helpers/objectDataToFormData';
 import {
   GETData, POSTData, PATCHData, DELETEData
 } from '../helpers/apiHelper';
 
-
-function ambulanceDataToFormData(ambulanceData) {
-  const data = new FormData();
-  const keys = Object.keys(ambulanceData);
-  for (let i = 0; i < keys.length; i += 1) {
-    const key = keys[i];
-    if (Array.isArray(ambulanceData[key])) {
-      for (let j = 0; j < ambulanceData[key].length; j += 1) {
-        data.append(key, ambulanceData[key][j]);
-      }
-    } else { data.append(key, ambulanceData[key]); }
-  }
-
-  return data;
-}
 
 export function fetchAmbulances(dispatch) {
   return new Promise((resolve, reject) => {
@@ -38,11 +24,10 @@ export function fetchAmbulances(dispatch) {
 
 export function modifyAmbulanceHelper(dispatch, ambulanceId, ambulanceData) {
   const token = getTokenFromStorage();
-  const data = ambulanceDataToFormData(ambulanceData);
+  const data = objectDataToFormData(ambulanceData);
 
-  console.log('ambulanceData from modifyAmbulanceHelper :');
+  console.log('ambulanceData');
   console.log(ambulanceData);
-  console.log(data);
 
   PATCHData(`/api/ambulances/${ambulanceId}`, data, false, token)
     .then(() => {
@@ -81,7 +66,7 @@ export function removeAmbulanceHelper(dispatch, ambulanceId) {
 
 export function addAmbulanceHelper(dispatch, ambulanceData) {
   const token = getTokenFromStorage();
-  const data = ambulanceDataToFormData(ambulanceData);
+  const data = objectDataToFormData(ambulanceData);
 
   POSTData('/api/ambulances', data, false, token)
     .then(response => response.json())

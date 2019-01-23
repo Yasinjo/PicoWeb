@@ -5,6 +5,8 @@ export default function hospitalsReducer(state = {}, action) {
   const data = getActionData(action);
   let newState;
   let ambulanceInfo;
+  let driverInfo;
+
   switch (getActionType(action)) {
     case ActionTypes.FETCH_DRIVERS:
       newState = {};
@@ -49,6 +51,21 @@ export default function hospitalsReducer(state = {}, action) {
       newState[ambulanceInfo.driver_id] = data.ambulanceId;
 
       return newState;
+
+
+    case ActionTypes.MODIFY_DRIVER:
+      newState = { ...state };
+      driverInfo = data.driverData;
+      const ambulanceId = newState[data.driverId].ambulance_id;
+
+      newState[data.driverId] = {
+        full_name: driverInfo.full_name,
+        phone_number: driverInfo.phone_number,
+        ambulance_id: ambulanceId,
+      };
+
+      return newState;
+
     default: return state;
   }
 }

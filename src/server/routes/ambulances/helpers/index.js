@@ -95,11 +95,11 @@ function getAmbulancesByPartner(request, response) {
     });
 }
 
-function updateAmbulanceDriver(ambulanceId, driverId) {
-  GenericDAO.removeFields(Driver, { ambulance_id: ambulanceId }, ['ambulance_id'], () => {
+function updateAmbulanceDriver(ambulanceId, driverId, callback) {
+  GenericDAO.updateFields(Driver, { ambulance_id: ambulanceId }, { ambulance_id: null }, () => {
     if (driverId) {
-      GenericDAO.updateFields(Driver, { _id: driverId }, { ambulance_id: ambulanceId }, () => {});
-    }
+      GenericDAO.updateFields(Driver, { _id: driverId }, { ambulance_id: ambulanceId }, callback);
+    } else { callback(); }
   });
 }
 
@@ -114,17 +114,20 @@ function updateAmbulance(request, response, ambulanceId, dataKeys) {
           if (err || !ambulance) response.status(400).send({ error: 'Ambulance not found' });
           GenericDAO.updateFields(Ambulance, { _id: ambulanceId }, _.pick(ambulanceData, dataKeys),
             (err2) => {
-              if (request.file && request.file.buffer) {
-                uploadPictureHelper(request.file.buffer, ambulance._id,
-                  AMBULANCES_REPO_NAME, () => {});
-              }
+              const sendResponse = () => {
+                if (err2) {
+                  response.status(400).send({ error: 'Update error', msg: err2 });
+                } else {
+                  response.status(202).send();
+                }
+              };
 
-              updateAmbulanceDriver(ambulanceId, ambulanceData.driver_id);
-              if (err2) {
-                response.status(400).send({ error: 'Update error', msg: err2 });
-              } else {
-                response.status(202).send();
-              }
+              updateAmbulanceDriver(ambulanceId, ambulanceData.driver_id, () => {
+                if (request.file && request.file.buffer) {
+                  uploadPictureHelper(request.file.buffer, ambulance._id,
+                    AMBULANCES_REPO_NAME, sendResponse);
+                } else sendResponse();
+              });
             });
         });
     });
@@ -153,8 +156,7 @@ function verifyPartnerRightOnAmbulance(request, ambulanceId) {
 
 function deleteAmbulance(request, response, ambulanceId) {
   verifyPartnerRightOnAmbulance(request, ambulanceId).then(() => {
-    GenericDAO.removeFields(Driver, { ambulance_id: ambulanceId }, ['ambulance_id'], () => {
-      console.log('3 : ');
+    GenericDAO.updateFields(Driver, { ambulance_id: ambulanceId }, { ambulance_id: null }, () => {
       GenericDAO.remove(Ambulance, { _id: ambulanceId })
         .then(response.status(200).send())
         .catch((err) => {

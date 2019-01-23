@@ -53,7 +53,7 @@ export default class DriversTable extends React.Component {
   };
 
   onConfirmModifyDriver = (driverId, driverData) => this.props.modifyDriver(driverId, driverData)
-    .then(() => this.onCloseModifyDriver)
+    .then(() => this.onCloseModifyDriver())
 
   onCloseModifyDriver = () => this.setState({ modifyDriver: false });
 
