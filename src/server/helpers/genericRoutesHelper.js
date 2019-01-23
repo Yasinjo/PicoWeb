@@ -16,6 +16,8 @@ function saveUser(request, response, accountType, dataKeys, BOSchema, uploadsRep
   return savePhoneAccount(request.body, accountType).then((phoneAccount) => {
     // Create a user business object from the request body
     const userData = _.pick(request.body, dataKeys);
+    console.log('userData');
+    console.log(userData);
     userData.phone_account_id = phoneAccount._id;
 
     const user = new BOSchema(userData);

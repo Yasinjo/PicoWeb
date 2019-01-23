@@ -1,5 +1,7 @@
 {
   "REQUIRED_FIELD": "This field is required",
   "ACTIVE_CLASSNAME": "active",
-  "PHONE_NUMBER_ALREADY_EXISTS": "Phone number already exists"
+  "PHONE_NUMBER_ALREADY_EXISTS": "Phone number already exists",
+  "MINIMUM_PASSWORD_LENGTH": 6,
+  "PASSWORD_TOO_SHORT": "Password too short, minimum 6 characters"
 }

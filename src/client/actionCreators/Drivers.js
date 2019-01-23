@@ -65,3 +65,21 @@ export function removeDriverHelper(dispatch, driverId) {
       console.log(response);
     });
 }
+
+export function addDriverHelper(dispatch, driverData) {
+  return new Promise((resolve, reject) => {
+    const token = getTokenFromStorage();
+    const data = objectDataToFormData(driverData);
+
+    POSTData('/api/drivers', data, false, token)
+      .then(() => {
+        fetchDrivers(dispatch);
+        return resolve();
+      })
+      .catch((response) => {
+        console.log('addAmbulanceHelper Error');
+        console.log(response);
+        reject(PHONE_NUMBER_ALREADY_EXISTS);
+      });
+  });
+}

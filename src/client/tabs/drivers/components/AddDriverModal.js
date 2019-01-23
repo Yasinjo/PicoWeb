@@ -1,16 +1,18 @@
 import React from 'react';
 
 import Modal from '../../../shared/Modal';
-import { REQUIRED_FIELD, PHONE_NUMBER_ALREADY_EXISTS } from '../../../constants.json';
+import {
+  REQUIRED_FIELD, PHONE_NUMBER_ALREADY_EXISTS, MINIMUM_PASSWORD_LENGTH, PASSWORD_TOO_SHORT
+} from '../../../constants.json';
 
-export default class ModifyDriverModal extends React.Component {
+export default class AddDriverModal extends React.Component {
   constructor(props) {
     super(props);
-    const { driverData } = this.props;
     this.fileUploadRef = React.createRef();
     this.state = {
-      fullName: driverData.full_name,
-      phoneNumber: driverData.phone_number,
+      fullName: '',
+      phoneNumber: '',
+      password: '',
       errors: {}
     };
   }
@@ -30,6 +32,10 @@ export default class ModifyDriverModal extends React.Component {
     phoneNumber: e.currentTarget.value
   });
 
+  handlePasswordChange = e => this.setState({
+    password: e.currentTarget.value
+  });
+
   onConfirmModal = () => {
     // Phone number already used error
     if (!this.state.fullName || !this.state.fullName.trim().length) {
@@ -40,14 +46,23 @@ export default class ModifyDriverModal extends React.Component {
       return this.setState({ errors: { phoneNumber: REQUIRED_FIELD } });
     }
 
+    if (!this.state.password || !this.state.password.length) {
+      return this.setState({ errors: { password: REQUIRED_FIELD } });
+    }
+
+    if (this.state.password.length < MINIMUM_PASSWORD_LENGTH) {
+      return this.setState({ errors: { password: PASSWORD_TOO_SHORT } });
+    }
+
     const newData = {
       full_name: this.state.fullName,
-      phone_number: this.state.phoneNumber
+      phone_number: this.state.phoneNumber,
+      password: this.state.password
     };
 
-    const { driverId, onConfirm } = this.props;
+    const { onConfirm } = this.props;
     const image = (this.fileUploadRef.current.files) ? this.fileUploadRef.current.files[0] : null;
-    return onConfirm(driverId, { ...newData, image })
+    return onConfirm({ ...newData, image })
       .catch((error) => {
         if (error === PHONE_NUMBER_ALREADY_EXISTS) {
           this.setState({ errors: { phoneNumber: PHONE_NUMBER_ALREADY_EXISTS } });
@@ -57,7 +72,7 @@ export default class ModifyDriverModal extends React.Component {
 
   render() {
     const {
-      fullName, phoneNumber, errors
+      fullName, phoneNumber, password, errors
     } = this.state;
 
     const { onClose } = this.props;
@@ -101,6 +116,24 @@ export default class ModifyDriverModal extends React.Component {
           </div>
         </div>
 
+        <div className={this.createDivClassName('password')}>
+          <label htmlFor="password" className="col-sm-4 control-label">
+            Password
+          </label>
+
+          <div className="col-sm-8">
+            <input
+              id="password"
+              type="password"
+              className="form-control"
+              value={password}
+              onChange={this.handlePasswordChange}
+            />
+            {errors.password
+                  && <span className="help-block">{errors.password}</span>}
+          </div>
+        </div>
+
 
         <div className="form-group">
           <label htmlFor="driver_image" className="col-sm-4 control-label">
@@ -114,7 +147,7 @@ export default class ModifyDriverModal extends React.Component {
     );
 
     return (
-      <Modal title="Modify a driver" onConfirm={this.onConfirmModal} onClose={onClose} cofirmEnabled>
+      <Modal title="Add a driver" onConfirm={this.onConfirmModal} onClose={onClose} cofirmEnabled>
         <form className="form-horizontal">
           {fields}
         </form>

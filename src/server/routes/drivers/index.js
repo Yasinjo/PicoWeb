@@ -8,6 +8,8 @@ const path = require('path');
 const express = require('express');
 const passport = require('passport');
 
+const getToken = require('../../helpers/getToken');
+const { extractUserIdFromToken } = require('../../auth/tokenExtractors');
 const Driver = require('../../bo/driver.bo');
 const Ambulance = require('../../bo/ambulance.bo');
 const { DRIVER_PHONE_ACCOUNT_TYPE } = require('../../bo/phone_account.bo');
@@ -37,8 +39,6 @@ addAuthStrategy(passport, Driver, DRIVER_AUTH_STRATEGY_NAME, false);
     * @Request body :
       {
           full_name : <string>{required},
-          latitude : <number>{required},
-          longitude : <number>{required},
           phone_number : <string>{required},
           password : <string>{required},
           image : <image_file>{optional}, ==> see https://www.learn2crack.com/2014/08/android-upload-image-node-js-server.html
@@ -49,12 +49,18 @@ addAuthStrategy(passport, Driver, DRIVER_AUTH_STRATEGY_NAME, false);
       - 201 :
         { success : <boolean> }
 */
-router.post('/signup', uploadMiddleware.single('image'), (request, response) => {
+router.post('/', passport.authenticate(PARTNER_AUTH_STRATEGY_NAME, { session: false }),
+  uploadMiddleware.single('image'), (request, response) => {
   // Initialize the required keys
-  const requiredKeys = ['phone_number', 'password', 'full_name'];
-  // Call the generic function signupUser
-  signupUser(request, response, requiredKeys, ['full_name'], DRIVER_PHONE_ACCOUNT_TYPE, Driver, DRIVERS_REPO_NAME);
-});
+    const requiredKeys = ['phone_number', 'password', 'full_name'];
+    const token = getToken(request.headers);
+    extractUserIdFromToken(token)
+      .then((partnerId) => {
+        // Call the generic function signupUser
+        request.body.partner_id = partnerId;
+        signupUser(request, response, requiredKeys, ['full_name', 'partner_id'], DRIVER_PHONE_ACCOUNT_TYPE, Driver, DRIVERS_REPO_NAME);
+      });
+  });
 
 
 /*

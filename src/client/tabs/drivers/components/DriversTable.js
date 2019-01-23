@@ -1,7 +1,10 @@
 import React from 'react';
 import NoResultLabel from '../../../shared/NoResultLabel';
 import ModifyDriverModal from './ModifyDriverModal';
+import AddDriverModal from './AddDriverModal';
 import Modal from '../../../shared/Modal';
+import AddItemButton from '../../../shared/AddItemButton';
+
 import { CENTERED_TEXT_STYLE, createDriverImageElement, createAmbulanceImageElement } from '../../ambulances/components/AmbulancesTable';
 
 export default class DriversTable extends React.Component {
@@ -30,6 +33,8 @@ export default class DriversTable extends React.Component {
       this.setState({ removeDriver: true, targetDriverId: driverId });
     }
   }
+
+  addNewDriverClickHandler = () => this.setState({ addNewDriver: true });
 
   createDriverRow = (driverId, driverData) => {
     let ambulance;
@@ -62,7 +67,7 @@ export default class DriversTable extends React.Component {
   };
 
   onConfirmModifyDriver = (driverId, driverData) => this.props.modifyDriver(driverId, driverData)
-    .then(() => this.onCloseModifyDriver())
+    .then(this.onCloseModifyDriver);
 
   onCloseModifyDriver = () => this.setState({ modifyDriver: false });
 
@@ -73,9 +78,18 @@ export default class DriversTable extends React.Component {
 
   onCloseRemoving = () => this.setState({ removeDriver: false, targetDriverId: null });;
 
+  addDriverOnConfirm = driverData => this.props.addDriver(driverData)
+    .then(this.addDriverOnClose)
+
+  addDriverOnClose = () => {
+    this.setState({ addNewDriver: false });
+  }
+
   render() {
     const { drivers } = this.props;
-    const { targetDriverId, modifyDriver, removeDriver } = this.state;
+    const {
+      targetDriverId, modifyDriver, removeDriver, addNewDriver
+    } = this.state;
     let finalContent;
     const driversIds = Object.keys(drivers);
     if (driversIds.length > 0) {
@@ -104,6 +118,9 @@ export default class DriversTable extends React.Component {
     return (
       <React.Fragment>
         {finalContent}
+        <AddItemButton onClick={this.addNewDriverClickHandler}>
+            Add new driver
+        </AddItemButton>
 
         {
           modifyDriver
@@ -128,6 +145,16 @@ export default class DriversTable extends React.Component {
             >
               Are you sure ?
             </Modal>
+          )
+        }
+
+        {
+          addNewDriver
+          && (
+            <AddDriverModal
+              onConfirm={this.addDriverOnConfirm}
+              onClose={this.addDriverOnClose}
+            />
           )
         }
       </React.Fragment>
