@@ -25,11 +25,11 @@ const PhoneAccountSchema = new Schema({
   },
   latitude: {
     type: Schema.Types.Number,
-    required: true
+    default: -7
   },
   longitude: {
     type: Schema.Types.Number,
-    required: true
+    default: 33
   },
   socketId: {
     type: Schema.Types.String

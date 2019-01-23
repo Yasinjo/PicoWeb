@@ -6,6 +6,7 @@ import { Provider } from 'react-redux';
 import thunkMiddleware from 'redux-thunk';
 import { fetchHospitals } from './actionCreators/Hospitals';
 import { fetchAmbulances } from './actionCreators/Ambulances';
+import { fetchDrivers } from './actionCreators/Drivers';
 
 import rootReducer from './reducers/index';
 import App from './App';
@@ -16,8 +17,9 @@ const store = createStore(
 );
 
 function initData() {
-  fetchHospitals(store.dispatch);
-  fetchAmbulances(store.dispatch);
+  fetchHospitals(store.dispatch)
+    .then(() => fetchAmbulances(store.dispatch))
+    .then(() => fetchDrivers(store.dispatch));
 }
 
 function Main() {

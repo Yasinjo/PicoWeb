@@ -12,8 +12,16 @@ export default function ambulancesReducer(state = {}, action) {
         newState[ambulance._id] = {
           registration_number: ambulance.registration_number,
           hospital_ids: ambulance.hospital_ids,
-          driver_id: null
+          driver_id: ambulance.driver_id
         };
+      });
+
+      return newState;
+
+    case ActionTypes.FETCH_DRIVERS:
+      newState = { ...state };
+      data.forEach((driver) => {
+        if (newState[driver.ambulance_id]) { newState[driver.ambulance_id].driver_id = driver._id; }
       });
 
       return newState;

@@ -15,12 +15,14 @@ const GenericDAO = require('../../dao/genericDAO');
 const verifyRequiredFields = require('../../helpers/verifyRequiredFields');
 const { uploadMiddleware, UPLOADS_PATH } = require('../../helpers/uploadPictureHelper');
 const { signupUser, signinUser } = require('../../helpers/genericRoutesHelper');
+const { getDriversByPartner } = require('./helpers/index');
 const { AMBULANCE_NOT_FOUND } = require('../alarms/helpers/index');
 const addAuthStrategy = require('../../auth/addAuthStrategy');
 
 const DRIVERS_REPO_NAME = 'DRIVERS_REPO_NAME';
 const DRIVER_NOT_FOUND = 'Driver not found';
 const DRIVER_AUTH_STRATEGY_NAME = 'Driver-auth-strategy';
+const { PARTNER_AUTH_STRATEGY_NAME } = require('../partners/index');
 
 // Create the router
 const router = express.Router();
@@ -48,7 +50,7 @@ addAuthStrategy(passport, Driver, DRIVER_AUTH_STRATEGY_NAME, false);
 */
 router.post('/signup', uploadMiddleware.single('image'), (request, response) => {
   // Initialize the required keys
-  const requiredKeys = ['phone_number', 'password', 'full_name', 'latitude', 'longitude'];
+  const requiredKeys = ['phone_number', 'password', 'full_name'];
   // Call the generic function signupUser
   signupUser(request, response, requiredKeys, ['full_name'], DRIVER_PHONE_ACCOUNT_TYPE, Driver, DRIVERS_REPO_NAME);
 });
@@ -114,6 +116,14 @@ router.patch('/:driver_id/ambulance', uploadMiddleware.single('image'), (request
     });
   });
 });
+
+
+/*
+    * @route : GET /api/drivers
+    * @description : get all the drivers added by a partner
+*/
+router.get('/', passport.authenticate(PARTNER_AUTH_STRATEGY_NAME, { session: false }),
+  (request, response) => getDriversByPartner(request, response));
 
 // Image routing
 router.use('/image', express.static(path.join(UPLOADS_PATH, DRIVERS_REPO_NAME)));

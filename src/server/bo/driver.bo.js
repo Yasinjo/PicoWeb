@@ -18,6 +18,11 @@ const DriverSchema = new Schema({
     type: Schema.Types.ObjectId,
     ref: 'Ambulance'
   },
+  partner_id: {
+    type: Schema.Types.ObjectId,
+    ref: 'Partner',
+    required: true
+  },
   phone_account_id: {
     type: Schema.Types.ObjectId,
     ref: 'Phone_account',

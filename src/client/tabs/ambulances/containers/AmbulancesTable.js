@@ -12,7 +12,7 @@ const mapDispatchToProps = dispatch => ({
 const mapStateToProps = state => ({
   ambulances: state.ambulances,
   hospitals: state.hospitals,
-  drivers: {}
+  drivers: state.drivers
 });
 
 export default connect(

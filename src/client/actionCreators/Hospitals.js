@@ -5,16 +5,19 @@ import {
 } from '../helpers/apiHelper';
 
 export function fetchHospitals(dispatch) {
-  const token = getTokenFromStorage();
-  GETData('/api/hospitals/partners', null, token)
-    .then(result => result.json())
-    .then((result) => {
-      const action = { type: ActionTypes.FETCH_HOSPITALS, data: result.hospitals };
-      dispatch(action);
-    })
-    .catch((error) => {
-      throw error;
-    });
+  return new Promise((resolve, reject) => {
+    const token = getTokenFromStorage();
+    GETData('/api/hospitals/partners', null, token)
+      .then(result => result.json())
+      .then((result) => {
+        const action = { type: ActionTypes.FETCH_HOSPITALS, data: result.hospitals };
+        dispatch(action);
+        resolve();
+      })
+      .catch((error) => {
+        reject(error);
+      });
+  });
 }
 
 export function modifyHospitalHelper(dispatch, hospitalId, hospitalData) {

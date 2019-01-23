@@ -21,21 +21,29 @@ function ambulanceDataToFormData(ambulanceData) {
 }
 
 export function fetchAmbulances(dispatch) {
-  const token = getTokenFromStorage();
-  GETData('/api/ambulances', null, token)
-    .then(result => result.json())
-    .then((result) => {
-      const action = { type: ActionTypes.FETCH_AMBULANCES, data: result.ambulances };
-      dispatch(action);
-    })
-    .catch((error) => {
-      throw error;
-    });
+  return new Promise((resolve, reject) => {
+    const token = getTokenFromStorage();
+    GETData('/api/ambulances', null, token)
+      .then(result => result.json())
+      .then((result) => {
+        const action = { type: ActionTypes.FETCH_AMBULANCES, data: result.ambulances };
+        dispatch(action);
+        resolve();
+      })
+      .catch((error) => {
+        reject(error);
+      });
+  });
 }
 
 export function modifyAmbulanceHelper(dispatch, ambulanceId, ambulanceData) {
   const token = getTokenFromStorage();
   const data = ambulanceDataToFormData(ambulanceData);
+
+  console.log('ambulanceData from modifyAmbulanceHelper :');
+  console.log(ambulanceData);
+  console.log(data);
+
   PATCHData(`/api/ambulances/${ambulanceId}`, data, false, token)
     .then(() => {
       const action = {
@@ -46,6 +54,7 @@ export function modifyAmbulanceHelper(dispatch, ambulanceId, ambulanceData) {
       };
 
       dispatch(action);
+      fetchAmbulances(dispatch);
     })
     .catch((response) => {
       console.log('modifyAmbulanceHelper Error');

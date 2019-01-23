@@ -6,7 +6,7 @@ import Modal from '../../../shared/Modal';
 import AddItemButton from '../../../shared/AddItemButton';
 
 const NO_IMAGE_AVAILABLE_SRC = '../img/no_image_available.jpg';
-const CENTERED_TEXT_STYLE = { textAlign: 'center' };
+export const CENTERED_TEXT_STYLE = { textAlign: 'center' };
 
 function onErrorImageLoading(e) {
   e.preventDefault();
@@ -19,12 +19,12 @@ function createImageElement(imageSrc) {
   );
 }
 
-function createAmbulanceImageElement(ambulanceId) {
+export function createAmbulanceImageElement(ambulanceId) {
   const imageSrc = (ambulanceId) ? `http://${window.location.host}/api/ambulances/image/${ambulanceId}.jpg` : '';
   return createImageElement(imageSrc);
 }
 
-function createDriverImageElement(driverId) {
+export function createDriverImageElement(driverId) {
   const imageSrc = (driverId) ? `http://${window.location.host}/api/drivers/image/${driverId}.jpg` : '';
   return createImageElement(imageSrc);
 }

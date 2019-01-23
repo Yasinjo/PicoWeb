@@ -5,12 +5,14 @@ import { BrowserRouter as Router, Route } from 'react-router-dom';
 import SideBar from './SideBar';
 import HospitalsTab from '../tabs/hospitals/index';
 import AmbumlancesTab from '../tabs/ambulances/index';
+import DriversTab from '../tabs/drivers/index';
 import { ACTIVE_CLASSNAME } from '../constants.json';
 
 
 const routes = {
   hospitals: '/',
   ambulances: '/ambulances',
+  drivers: '/drivers',
 };
 
 const tabs = [
@@ -23,6 +25,11 @@ const tabs = [
     link: routes.ambulances,
     className: 'sf-house',
     label: 'Ambulances'
+  },
+  {
+    link: routes.drivers,
+    className: 'sf-house',
+    label: 'Drivers'
   }
 ];
 
@@ -44,6 +51,7 @@ export default class MainMenu extends React.Component {
 
           <Route path={routes.hospitals} exact component={HospitalsTab} />
           <Route path={routes.ambulances} exact component={AmbumlancesTab} />
+          <Route path={routes.drivers} exact component={DriversTab} />
 
         </React.Fragment>
       </Router>

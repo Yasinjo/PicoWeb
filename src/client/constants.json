@@ -1,4 +1,5 @@
 {
   "REQUIRED_FIELD": "This field is required",
-  "ACTIVE_CLASSNAME": "active"
+  "ACTIVE_CLASSNAME": "active",
+  "PHONE_NUMBER_ALREADY_EXISTS": "Phone number already exists"
 }

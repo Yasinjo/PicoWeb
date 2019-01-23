@@ -70,15 +70,27 @@ function saveAmbulance(request, response, dataKeys) {
   return response.status(403).send({ success: false });
 }
 
+function addDriverIdToAmbulance(ambulances, index, callback) {
+  if (index === ambulances.length) { return callback(); }
+
+  return GenericDAO.findAmbulanceDriver(ambulances[index]._id)
+    .then((driver) => {
+      ambulances[index]._doc.driver_id = driver._id;
+      addDriverIdToAmbulance(ambulances, index + 1, callback);
+    })
+    .catch(() => addDriverIdToAmbulance(ambulances, index + 1, callback));
+}
+
 function getAmbulancesByPartner(request, response) {
   const token = getToken(request.headers);
   extractUserIdFromToken(token)
     .then((partnerId) => {
       GenericDAO.find(Ambulance, { partner_id: partnerId }, (err, ambulances) => {
       // If there is an error, send it in response
-        if (err) response.status(500).send(err);
+        if (err) return response.status(500).send(err);
         // Otherwise, send the hospitals in response
-        return response.status(200).send({ success: true, ambulances });
+        return addDriverIdToAmbulance(ambulances, 0,
+          () => response.status(200).send({ success: true, ambulances }));
       });
     });
 }
