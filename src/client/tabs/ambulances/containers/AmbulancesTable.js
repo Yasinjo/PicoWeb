@@ -11,7 +11,7 @@ const mapDispatchToProps = dispatch => ({
 
 const mapStateToProps = state => ({
   ambulances: state.ambulances,
-  hospitals: state.hospitals,
+  hospitals: state.allHospitals,
   drivers: state.drivers
 });
 

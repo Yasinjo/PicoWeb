@@ -8,6 +8,8 @@ const ActionTypes = keyMirror({
   REMOVE_HOSPITAL: null,
   ADD_HOSPITAL: null,
 
+  FETCH_ALL_HOSPITALS: null,
+
 
   FETCH_AMBULANCES: null,
   MODIFY_AMBULANCE: null,

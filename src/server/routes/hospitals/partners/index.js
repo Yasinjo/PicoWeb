@@ -8,7 +8,7 @@ const express = require('express');
 const passport = require('passport');
 const verifyRequiredFields = require('../../../helpers/verifyRequiredFields');
 const { getAllHospitalsByPartner, updateHospital } = require('../helpers/index');
-const { saveHospital, deleteHospital } = require('../helpers/index');
+const { saveHospital, deleteHospital, getAllHospitals } = require('../helpers/index');
 const { PARTNER_AUTH_STRATEGY_NAME } = require('../../partners/index');
 
 // Create the router
@@ -72,6 +72,10 @@ router.delete('/:hospital_id', passport.authenticate(PARTNER_AUTH_STRATEGY_NAME,
   (request, response) => {
     deleteHospital(request, response, request.params.hospital_id);
   });
+
+
+router.get('/all', passport.authenticate(PARTNER_AUTH_STRATEGY_NAME, { session: false }),
+  (request, response) => getAllHospitals(request, response));
 
 // Export the module
 module.exports = {
