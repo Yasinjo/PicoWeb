@@ -18,17 +18,17 @@ const routes = {
 const tabs = [
   {
     link: routes.hospitals,
-    className: 'sf-house',
+    className: 'sf-building',
     label: 'Hospitals'
   },
   {
     link: routes.ambulances,
-    className: 'sf-house',
+    className: 'sf-dashboard-alt',
     label: 'Ambulances'
   },
   {
     link: routes.drivers,
-    className: 'sf-house',
+    className: 'sf-profile-group',
     label: 'Drivers'
   }
 ];
