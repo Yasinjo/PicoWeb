@@ -66,6 +66,11 @@ export default function hospitalsReducer(state = {}, action) {
 
       return newState;
 
+    case ActionTypes.REMOVE_DRIVER:
+      newState = { ...state };
+      delete newState[data.driverId];
+      return newState;
+
     default: return state;
   }
 }

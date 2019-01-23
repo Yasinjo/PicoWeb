@@ -102,7 +102,21 @@ function updateDriver(request, response, driverId) {
     .catch(() => response.status(400).send());
 }
 
+
+function deleteDriver(request, response, driverId) {
+  verifyPartnerRightOnDriver(request, driverId).then(() => {
+    findPhoneAccountFromUserId(Driver, driverId)
+      .then(({ phoneAccount }) => {
+        GenericDAO.remove(PhoneAccount, { _id: phoneAccount._id });
+        GenericDAO.remove(Driver, { _id: driverId })
+          .then(() => response.status(200).send())
+          .catch(err => response.status(500).send(err));
+      });
+  }).catch(() => response.status(400).send());
+}
+
 module.exports = {
   getDriversByPartner,
+  deleteDriver,
   updateDriver
 };

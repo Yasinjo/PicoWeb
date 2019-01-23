@@ -15,7 +15,7 @@ const GenericDAO = require('../../dao/genericDAO');
 const verifyRequiredFields = require('../../helpers/verifyRequiredFields');
 const { uploadMiddleware, UPLOADS_PATH } = require('../../helpers/uploadPictureHelper');
 const { signupUser, signinUser } = require('../../helpers/genericRoutesHelper');
-const { getDriversByPartner, updateDriver } = require('./helpers/index');
+const { getDriversByPartner, updateDriver, deleteDriver } = require('./helpers/index');
 const { AMBULANCE_NOT_FOUND } = require('../alarms/helpers/index');
 const addAuthStrategy = require('../../auth/addAuthStrategy');
 
@@ -139,6 +139,16 @@ router.patch('/:driver_id', passport.authenticate(PARTNER_AUTH_STRATEGY_NAME, { 
       .then(() => {
         updateDriver(request, response, request.params.driver_id);
       });
+  });
+
+/*
+    * @route : DELETE /api/drivers/:driver_id
+    * @description : delete a driver
+*/
+router.delete('/:driver_id', passport.authenticate(PARTNER_AUTH_STRATEGY_NAME, { session: false }),
+  (request, response) => {
+    const driverId = request.params.driver_id;
+    deleteDriver(request, response, driverId);
   });
 
 // Image routing

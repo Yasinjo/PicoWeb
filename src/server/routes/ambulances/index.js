@@ -71,7 +71,7 @@ router.patch('/:ambulance_id', passport.authenticate(PARTNER_AUTH_STRATEGY_NAME,
 
 /*
     * @route : DELETE /api/ambulances/:ambulance_id
-    * @description : delete a hospital
+    * @description : delete an ambulance
 */
 router.delete('/:ambulance_id', passport.authenticate(PARTNER_AUTH_STRATEGY_NAME, { session: false }),
   (request, response) => {

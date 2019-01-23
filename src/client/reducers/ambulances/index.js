@@ -52,6 +52,18 @@ export default function ambulancesReducer(state = {}, action) {
       };
       return newState;
 
+    case ActionTypes.REMOVE_DRIVER:
+      newState = { ...state };
+      const keys = Object.keys(newState);
+      for (let i = 0; i < keys.length; i += 1) {
+        const key = keys[i];
+        if (newState[key].driver_id === data.driverId) {
+          newState[key].driver_id = null;
+          break;
+        }
+      }
+      return newState;
+
     default: return state;
   }
 }

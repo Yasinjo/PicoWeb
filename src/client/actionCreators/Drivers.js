@@ -48,3 +48,20 @@ export function modifyDriverHelper(dispatch, driverId, driverData) {
       });
   });
 }
+
+export function removeDriverHelper(dispatch, driverId) {
+  const token = getTokenFromStorage();
+  DELETEData(`/api/drivers/${driverId}`, null, false, token)
+    .then(() => {
+      const action = {
+        type: ActionTypes.REMOVE_DRIVER,
+        data: { driverId }
+      };
+
+      dispatch(action);
+    })
+    .catch((response) => {
+      console.log('removeDriverHelper Error');
+      console.log(response);
+    });
+}

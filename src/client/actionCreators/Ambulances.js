@@ -26,11 +26,10 @@ export function modifyAmbulanceHelper(dispatch, ambulanceId, ambulanceData) {
   const token = getTokenFromStorage();
   const data = objectDataToFormData(ambulanceData);
 
-  console.log('ambulanceData');
-  console.log(ambulanceData);
-
   PATCHData(`/api/ambulances/${ambulanceId}`, data, false, token)
     .then(() => {
+      if (ambulanceData.image) { return window.location.reload(); }
+
       const action = {
         type: ActionTypes.MODIFY_AMBULANCE,
         data: {
@@ -39,7 +38,7 @@ export function modifyAmbulanceHelper(dispatch, ambulanceId, ambulanceData) {
       };
 
       dispatch(action);
-      fetchAmbulances(dispatch);
+      return fetchAmbulances(dispatch);
     })
     .catch((response) => {
       console.log('modifyAmbulanceHelper Error');

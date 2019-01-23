@@ -1,6 +1,7 @@
 import React from 'react';
 import NoResultLabel from '../../../shared/NoResultLabel';
 import ModifyDriverModal from './ModifyDriverModal';
+import Modal from '../../../shared/Modal';
 import { CENTERED_TEXT_STYLE, createDriverImageElement, createAmbulanceImageElement } from '../../ambulances/components/AmbulancesTable';
 
 export default class DriversTable extends React.Component {
@@ -21,6 +22,14 @@ export default class DriversTable extends React.Component {
       this.setState({ modifyDriver: true, targetDriverId: driverId });
     }
   };
+
+  removeClickHandler = (event) => {
+    const driverId = event.currentTarget.getAttribute('uid');
+    event.preventDefault();
+    if (this.props.drivers[driverId]) {
+      this.setState({ removeDriver: true, targetDriverId: driverId });
+    }
+  }
 
   createDriverRow = (driverId, driverData) => {
     let ambulance;
@@ -57,9 +66,16 @@ export default class DriversTable extends React.Component {
 
   onCloseModifyDriver = () => this.setState({ modifyDriver: false });
 
+  onConfirmRemoving = () => {
+    this.props.removeDriver(this.state.targetDriverId);
+    this.onCloseRemoving();
+  };
+
+  onCloseRemoving = () => this.setState({ removeDriver: false, targetDriverId: null });;
+
   render() {
     const { drivers } = this.props;
-    const { targetDriverId, modifyDriver } = this.state;
+    const { targetDriverId, modifyDriver, removeDriver } = this.state;
     let finalContent;
     const driversIds = Object.keys(drivers);
     if (driversIds.length > 0) {
@@ -98,6 +114,20 @@ export default class DriversTable extends React.Component {
             driverId={targetDriverId}
             driverData={drivers[targetDriverId]}
           />
+          )
+        }
+
+        {
+          removeDriver
+          && (
+            <Modal
+              title="Remove a driver"
+              onConfirm={this.onConfirmRemoving}
+              onClose={this.onCloseRemoving}
+              cofirmEnabled
+            >
+              Are you sure ?
+            </Modal>
           )
         }
       </React.Fragment>

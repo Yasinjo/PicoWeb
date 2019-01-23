@@ -15,7 +15,8 @@ const ActionTypes = keyMirror({
   ADD_AMBULANCE: null,
 
   FETCH_DRIVERS: null,
-  MODIFY_DRIVER: null
+  MODIFY_DRIVER: null,
+  REMOVE_DRIVER: null
 });
 
 export default ActionTypes;

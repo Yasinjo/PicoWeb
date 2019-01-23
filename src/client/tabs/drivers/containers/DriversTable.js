@@ -1,10 +1,11 @@
 import { connect } from 'react-redux';
 import DriversTable from '../components/DriversTable';
-import { modifyDriverHelper } from '../../../actionCreators/Drivers';
+import { modifyDriverHelper, removeDriverHelper } from '../../../actionCreators/Drivers';
 
 const mapDispatchToProps = dispatch => ({
   modifyDriver: (driverId, driverData) => modifyDriverHelper(dispatch,
-    driverId, driverData)
+    driverId, driverData),
+  removeDriver: driverId => removeDriverHelper(dispatch, driverId)
 });
 
 const mapStateToProps = state => ({
