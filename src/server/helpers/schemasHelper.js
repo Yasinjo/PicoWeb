@@ -6,6 +6,22 @@
 // Import the required modules
 const bcrypt = require('bcrypt-nodejs');
 
+function cryptPassword(next, user) {
+  return bcrypt.genSalt(10, (err, salt) => {
+    if (err) {
+      return next(err);
+    }
+
+    return bcrypt.hash(user.password, salt, null, (hashError, hash) => {
+      if (hashError) {
+        return next(hashError);
+      }
+      user.password = hash;
+      return next();
+    });
+  });
+}
+
 /*
     * @function
     * @description : crypt password before saving a user (citizen, partner or driver)
@@ -16,20 +32,16 @@ function preSaveAccount(next) {
   // If the current user is new or there is a password update
   if (user.isModified('password') || user.isNew) {
     // Crypt the password
-    return bcrypt.genSalt(10, (err, salt) => {
-      if (err) {
-        return next(err);
-      }
-
-      return bcrypt.hash(user.password, salt, null, (hashError, hash) => {
-        if (hashError) {
-          return next(hashError);
-        }
-        user.password = hash;
-        return next();
-      });
-    });
+    return cryptPassword(next, user);
   }
+
+  return next();
+}
+
+function preUpdateAccount(next) {
+  const query = this;
+  const user = query.getUpdate().$set;
+  if (user.password) { return cryptPassword(next, user); }
   return next();
 }
 
@@ -46,5 +58,6 @@ function comparePassword(passw, cb) {
 // Export the module
 module.exports = {
   preSaveAccount,
+  preUpdateAccount,
   comparePassword
 };

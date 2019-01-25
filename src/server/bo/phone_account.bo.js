@@ -6,7 +6,7 @@
 // Import the required modules
 const mongoose = require('mongoose');
 const uniqueValidator = require('mongoose-unique-validator');
-const { preSaveAccount, comparePassword } = require('../helpers/schemasHelper');
+const { preSaveAccount, preUpdateAccount, comparePassword } = require('../helpers/schemasHelper');
 
 const { Schema } = mongoose;
 const CITIZEN_PHONE_ACCOUNT_TYPE = 'CITIZEN_PHONE_ACCOUNT_TYPE';
@@ -43,6 +43,7 @@ const PhoneAccountSchema = new Schema({
 
 // Add the Schema methods
 PhoneAccountSchema.pre('save', preSaveAccount);
+PhoneAccountSchema.pre('update', preUpdateAccount);
 PhoneAccountSchema.methods.comparePassword = comparePassword;
 PhoneAccountSchema.plugin(uniqueValidator);
 

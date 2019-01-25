@@ -11,7 +11,9 @@ const path = require('path');
 const Citizen = require('../../bo/citizen.bo');
 const { CITIZEN_PHONE_ACCOUNT_TYPE } = require('../../bo/phone_account.bo');
 const { uploadMiddleware, UPLOADS_PATH } = require('../../helpers/uploadPictureHelper');
-const { signupUser, signinUser } = require('../../helpers/genericRoutesHelper');
+const {
+  signupUser, signinUser, retreiveUserData, changeUserPassword, changeUserImage
+} = require('../../helpers/genericRoutesHelper');
 const addAuthStrategy = require('../../auth/addAuthStrategy');
 
 // Initialize constants
@@ -77,6 +79,56 @@ router.post('/signin', (request, response) => {
   // Call the generic function signinUser
   signinUser(Citizen, request, response, CITIZEN_PHONE_ACCOUNT_TYPE, verifyAccountActivation);
 });
+
+
+/*
+    * @route : GET /api/citizens/data
+    * @description : get the name and the id of the connected citizen
+    * @Request header :
+        Authorization : token <String>
+    * @Response body :
+      - 400, 403 :
+      - 200 :
+        { id : <string>, full_name : <string> }
+*/
+router.get('/data', passport.authenticate(CITIZEN_AUTH_STRATEGY_NAME, { session: false }), (request, response) => {
+  retreiveUserData(request, response, Citizen, ['full_name', '_id']);
+});
+
+/*
+    * @route : PATCH /api/citizens/password
+    * @description : change the citizen password
+    * @Request body :
+      {
+          password : <string>{required}
+      }
+    * @Request header :
+        Authorization : token <String>
+    * @Response body :
+      - 500, 403
+      - 200
+*/
+router.patch('/password', passport.authenticate(CITIZEN_AUTH_STRATEGY_NAME, { session: false }), (request, response) => {
+  changeUserPassword(request, response, Citizen);
+});
+
+/*
+    * @route : PATCH /api/citizens/image
+    * @description : change the citizen image
+    * @Request body :
+      {
+          image : file
+      }
+    * @Request header :
+        Authorization : token <String>
+    * @Response body :
+      - 400, 403
+      - 200
+*/
+router.patch('/image', passport.authenticate(CITIZEN_AUTH_STRATEGY_NAME, { session: false }), uploadMiddleware.single('image'),
+  (request, response) => {
+    changeUserImage(request, response, CITIZENS_REPO_NAME);
+  });
 
 // Image routing
 router.use('/image', express.static(path.join(UPLOADS_PATH, CITIZENS_REPO_NAME)));

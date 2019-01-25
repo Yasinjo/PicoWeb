@@ -1,11 +1,12 @@
 const _ = require('lodash');
 const verifyRequiredFields = require('./verifyRequiredFields');
-const { savePhoneAccount } = require('./phoneAccountHelpers');
+const { savePhoneAccount, findPhoneAccountFromUserId } = require('./phoneAccountHelpers');
 const { uploadPictureHelper } = require('./uploadPictureHelper');
 const { PhoneAccount } = require('../bo/phone_account.bo');
 const GenericDAO = require('../dao/genericDAO');
 const createToken = require('../auth/createToken');
-
+const getToken = require('./getToken');
+const { extractUserIdFromToken } = require('../auth/tokenExtractors');
 // Initialize constants
 const PHONE_DUPLICATION_ERROR = 'Phone number already used';
 const USER_NOT_FOUND = 'Authentication failed, user not found.';
@@ -110,7 +111,56 @@ function signinUser(BOSchema, request, response, accountType, verifyAccountActiv
     });
 }
 
+function retreiveUserData(request, response, BOSchema, dataKeys) {
+  const token = getToken(request.headers);
+  extractUserIdFromToken(token)
+    .then((userId) => {
+      GenericDAO.findOne(BOSchema, { _id: userId }, (err, user) => {
+        if (err || !user) response.status(400).send(err);
+        const obj = _.pick(user, dataKeys);
+        response.status(200).send(obj);
+      });
+    });
+}
+
+function changeUserPassword(request, response, BOSchema) {
+  verifyRequiredFields(request, response, ['password'])
+    .then(() => {
+      const token = getToken(request.headers);
+      extractUserIdFromToken(token)
+        .then(userId => findPhoneAccountFromUserId(BOSchema, userId))
+        .then(({ phoneAccount }) => {
+          GenericDAO.updateFields(PhoneAccount, { _id: phoneAccount._id },
+            { password: request.body.password }, (err) => {
+              console.log('Error :');
+              console.log(err);
+              if (err) return response.status(500).send(err);
+              return response.status(200).send();
+            });
+        });
+    });
+}
+
+function changeUserImage(request, response, uploadsRepoName) {
+  if (request.file && request.file.buffer) {
+    const token = getToken(request.headers);
+    extractUserIdFromToken(token)
+      .then((userId) => {
+        uploadPictureHelper(request.file.buffer, userId, uploadsRepoName,
+          () => response.status(200).json({ success: true }));
+      });
+  } else {
+    response.status(400).send({
+      success: false,
+      msg: 'Please provide all the required data.'
+    });
+  }
+}
+
 module.exports = {
   signupUser,
-  signinUser
+  signinUser,
+  changeUserPassword,
+  retreiveUserData,
+  changeUserImage
 };
