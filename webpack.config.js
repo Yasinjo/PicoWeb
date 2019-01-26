@@ -12,7 +12,7 @@ const {
 
 module.exports = (env, argv) => {
   const SERVER_HOST = (argv.mode === 'production') ? WEB_HOST : LOCAL_HOST;
-
+  console.log(`SERVER_HOST :${SERVER_HOST}`);
   const outputDirectory = 'dist';
 
   const clientDir = path.join(__dirname, 'src', 'client');
