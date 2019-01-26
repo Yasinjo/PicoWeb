@@ -89,7 +89,7 @@ export default class LoginComponent extends React.Component {
                   type="text"
                   name="login"
                   className="form-control"
-                  placeholder="Login"
+                  placeholder="Login ::"
                   value={this.login}
                   onChange={this.updateLogin}
                 />
