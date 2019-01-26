@@ -6,7 +6,7 @@
   "scripts": {
     "server-dev": "nodemon src/server/index.js",
     "server-prod": "pm2 start src/server/index.js",
-    "client-prod": "pm2 start webpack-dev-server --mode production",
+    "client-prod": "pm2 start run.js",
     "client-dev": "webpack-dev-server --mode=development --devtool inline-source-map --hot",
     "start": "concurrently \"npm run client-prod\" \"npm run server-prod\"",
     "dev": "concurrently \"npm run server-dev\" \"npm run client-dev\"",
@@ -78,7 +78,7 @@
     "style-loader": "^0.23.1",
     "url-loader": "^1.1.2",
     "webpack": "^4.25.1",
-    "webpack-cli": "^3.1.2",
+    "webpack-cli": "^3.2.1",
     "webpack-dev-server": "^3.1.14"
   }
 }
