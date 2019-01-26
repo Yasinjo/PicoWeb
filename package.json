@@ -5,8 +5,8 @@
   "main": "src/server/index.js",
   "scripts": {
     "server-dev": "nodemon src/server/index.js",
-    "server-prod": "pm2 start src/server/index.js",
-    "client-prod": "pm2 start run.js",
+    "server-prod": "pm2 restart src/server/index.js",
+    "client-prod": "pm2 restart run.js",
     "client-dev": "webpack-dev-server --mode=development --devtool inline-source-map --hot",
     "start": "concurrently \"npm run client-prod\" \"npm run server-prod\"",
     "dev": "concurrently \"npm run server-dev\" \"npm run client-dev\"",
