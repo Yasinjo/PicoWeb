@@ -34,7 +34,8 @@ const AmbulanceSchema = new Schema({
   },
   hospital_ids: [{
     type: Schema.Types.ObjectId,
-    ref: 'Hospital'
+    ref: 'Hospital',
+    default: []
   }]
 });
 

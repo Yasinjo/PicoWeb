@@ -64,6 +64,9 @@ export default function ambulancesReducer(state = {}, action) {
       }
       return newState;
 
+    case ActionTypes.UPDATE_CONNECTION_STATE:
+      if (!data) return {};
+      return state;
     default: return state;
   }
 }

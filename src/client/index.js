@@ -4,6 +4,7 @@ import { createStore, applyMiddleware } from 'redux';
 import { composeWithDevTools } from 'redux-devtools-extension';
 import { Provider } from 'react-redux';
 import thunkMiddleware from 'redux-thunk';
+import getTokenFromStorage from './helpers/getTokenFromStorage';
 import { fetchHospitals } from './actionCreators/Hospitals';
 import { fetchAllHospitals } from './actionCreators/AllHospitals';
 import { fetchAmbulances } from './actionCreators/Ambulances';
@@ -18,10 +19,14 @@ const store = createStore(
 );
 
 function initData() {
-  fetchAllHospitals(store.dispatch)
-    .then(() => fetchHospitals(store.dispatch))
-    .then(() => fetchAmbulances(store.dispatch))
-    .then(() => fetchDrivers(store.dispatch));
+  const token = getTokenFromStorage();
+  console.log(`token : ${token}`);
+  if (token) {
+    fetchAllHospitals(store.dispatch)
+      .then(() => fetchHospitals(store.dispatch))
+      .then(() => fetchAmbulances(store.dispatch))
+      .then(() => fetchDrivers(store.dispatch));
+  }
 }
 
 function Main() {

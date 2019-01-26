@@ -46,11 +46,15 @@ export default function hospitalsReducer(state = {}, action) {
       return newState;
 
     case ActionTypes.ADD_AMBULANCE:
-      newState = { ...state };
       ambulanceInfo = data.ambulanceData;
-      newState[ambulanceInfo.driver_id] = data.ambulanceId;
+      if (ambulanceInfo.driver_id) {
+        newState = { ...state };
+        newState[ambulanceInfo.driver_id] = data.ambulanceId;
 
-      return newState;
+        return newState;
+      }
+
+      return state;
 
 
     case ActionTypes.MODIFY_DRIVER:
@@ -70,6 +74,10 @@ export default function hospitalsReducer(state = {}, action) {
       newState = { ...state };
       delete newState[data.driverId];
       return newState;
+
+    case ActionTypes.UPDATE_CONNECTION_STATE:
+      if (!data) return {};
+      return state;
 
     default: return state;
   }

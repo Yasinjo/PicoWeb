@@ -24,10 +24,8 @@ const router = express.Router();
     * @Request body :
       {
         registration_number : <string>{required},
-        latitude : <number>{required},
-        longitude : <number>{required},
         image : <image_file>{optional},
-        hospital_ids : [<string>{required}]
+        hospital_ids : [<string>{optional}]
       }
     * @Response body :
       - 400 :
@@ -38,7 +36,7 @@ const router = express.Router();
 router.post('/', passport.authenticate(PARTNER_AUTH_STRATEGY_NAME, { session: false }),
   uploadMiddleware.single('image'), (request, response) => {
   // Initialize the required keys
-    const requiredKeys = ['registration_number', 'hospital_ids'];
+    const requiredKeys = ['registration_number'];
     // Verify the required fields and save the ambulance
     verifyRequiredFields(request, response, requiredKeys)
       .then(() => {
@@ -60,7 +58,7 @@ router.get('/', passport.authenticate(PARTNER_AUTH_STRATEGY_NAME, { session: fal
 router.patch('/:ambulance_id', passport.authenticate(PARTNER_AUTH_STRATEGY_NAME, { session: false }), uploadMiddleware.single('image'),
   (request, response) => {
     // Initialize the required keys
-    const requiredKeys = ['registration_number', 'hospital_ids'];
+    const requiredKeys = ['registration_number'];
     // Verify the required fields and save the ambulance
     verifyRequiredFields(request, response, requiredKeys)
       .then(() => {

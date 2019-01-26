@@ -42,7 +42,7 @@ class AppCompoenent extends React.Component {
 
   render() {
     if (this.props.connected) {
-      return <MainMenu init={this.props.init} />;
+      return <MainMenu init={this.props.init} updateConnection={this.props.updateConnection} />;
     }
 
     if (getTokenFromStorage() && !this.state.tokenVerified) {

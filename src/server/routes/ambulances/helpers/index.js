@@ -47,7 +47,7 @@ function saveAmbulance(request, response, dataKeys) {
     // If there is a token, get the partner id from the token and save the hospital
     return extractUserIdFromToken(token)
       .then((partnerId) => {
-        const ambulanceData = _.pick(request.body, dataKeys);
+        const ambulanceData = _.pick(request.body, [...dataKeys, 'hospital_ids']);
         const ambulance = new Ambulance({ ...ambulanceData, partner_id: partnerId });
         GenericDAO.save(ambulance)
           .then(() => {
@@ -107,12 +107,12 @@ function updateAmbulance(request, response, ambulanceId, dataKeys) {
   const token = getToken(request.headers);
   extractUserIdFromToken(token)
     .then((partnerId) => {
-      const ambulanceData = _.pick(request.body, [...dataKeys, 'driver_id']);
+      const ambulanceData = _.pick(request.body, [...dataKeys, 'driver_id', 'hospital_ids']);
       GenericDAO.findOne(Ambulance, { _id: ambulanceId, partner_id: partnerId },
         (err, ambulance) => {
           // If there is an error, send it in response
           if (err || !ambulance) response.status(400).send({ error: 'Ambulance not found' });
-          GenericDAO.updateFields(Ambulance, { _id: ambulanceId }, _.pick(ambulanceData, dataKeys),
+          GenericDAO.updateFields(Ambulance, { _id: ambulanceId }, _.pick(ambulanceData, [...dataKeys, 'hospital_ids']),
             (err2) => {
               const sendResponse = () => {
                 if (err2) {
