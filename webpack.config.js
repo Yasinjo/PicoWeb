@@ -69,6 +69,7 @@ module.exports = (env, argv) => {
       open: true,
       historyApiFallback: true,
       host: '0.0.0.0',
+      disableHostCheck: true,
       proxy: {
         '/api': `${SERVER_HOST}:${SERVER_PORT}`
       }
