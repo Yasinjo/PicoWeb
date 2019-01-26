@@ -6,7 +6,7 @@
   "scripts": {
     "server-dev": "nodemon src/server/index.js",
     "server-prod": "pm2 start src/server/index.js",
-    "client-prod": "pm2 start webpack-dev-server --mode=production",
+    "client-prod": "pm2 start webpack-dev-server --mode production",
     "client-dev": "webpack-dev-server --mode=development --devtool inline-source-map --hot",
     "start": "concurrently \"npm run client-prod\" \"npm run server-prod\"",
     "dev": "concurrently \"npm run server-dev\" \"npm run client-dev\"",
