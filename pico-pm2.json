@@ -1,0 +1,9 @@
+{
+  "apps": [
+    {
+      "name": "pico",
+      "script": "npm",
+      "args": "start"
+    }
+  ]
+}
