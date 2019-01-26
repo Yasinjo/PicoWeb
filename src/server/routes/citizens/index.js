@@ -122,7 +122,7 @@ router.patch('/password', passport.authenticate(CITIZEN_AUTH_STRATEGY_NAME, { se
     * @Request header :
         Authorization : token <String>
     * @Response body :
-      - 400, 403
+      - 400, 403, 500
       - 200
 */
 router.patch('/image', passport.authenticate(CITIZEN_AUTH_STRATEGY_NAME, { session: false }), uploadMiddleware.single('image'),
