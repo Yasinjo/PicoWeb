@@ -30,6 +30,11 @@ const feedbackPercentage = byId('feedback_percentage');
 const feedbackComment = byId('feedback_comment');
 const cancelAlarmDiv = byId('cancel_alarm_div');
 
+let currentPositionIndex = 0;
+const staticPosition = [
+  { latitude: 33.700453, longitude: -7.362449 },
+  { latitude: 33.700301, longitude: -7.362664 }];
+
 let tokenVar = localStorage.getItem('token');
 let socket;
 let currentAlarmId;
@@ -175,9 +180,14 @@ function mainHospitals() {
 function initPositionTimer() {
   currentPositionDiv.className = 'visible';
   positionTimer = setInterval(() => {
+    if (currentPositionIndex === staticPosition.length) {
+      currentPositionIndex = 0;
+      return;
+    }
+
     const message = {
-      longitude: Math.random() * 100000,
-      latitude: Math.random() * 100000
+      latitude: staticPosition[currentPositionIndex].latitude,
+      longitude: staticPosition[currentPositionIndex].longitude,
     };
 
     longitudeElt.innerHTML = message.longitude;
