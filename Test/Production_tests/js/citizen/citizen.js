@@ -191,8 +191,8 @@ function initPositionTimer() {
       longitude: staticPosition[currentPositionIndex].longitude,
     };
 
-    longitudeElt.value = message.longitude;
-    latitudeElt.value = message.latitude;
+    longitudeElt.innerHTML = message.longitude;
+    latitudeElt.innerHTML = message.latitude;
 
     currentPositionIndex += 1;
     socket.emit('POSITION_CHANGE_EVENT', message);
