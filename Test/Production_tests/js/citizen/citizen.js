@@ -35,6 +35,12 @@ let socket;
 let currentAlarmId;
 let positionTimer;
 
+let currentPositionIndex = 0;
+const staticPosition = [
+  { latitude: 33.698424, longitude: -7.383894 },
+  { latitude: 33.698638, longitude: -7.383121 }
+  ];
+
 function sendAlarm(ambulanceId) {
   labelDiv.className = 'visible';
   labelDiv.innerHTML = '<b>Sending alarm</b>';
@@ -174,15 +180,21 @@ function mainHospitals() {
 
 function initPositionTimer() {
   currentPositionDiv.className = 'visible';
-  positionTimer = setInterval(() => {
+   positionTimer = setInterval(() => {
+    if (currentPositionIndex === staticPosition.length) {
+      // clearInterval(intervalID);
+      currentPositionIndex = 0;
+      return;
+    }
     const message = {
-      longitude: Math.random() * 100000,
-      latitude: Math.random() * 100000
+      latitude: staticPosition[currentPositionIndex].latitude,
+      longitude: staticPosition[currentPositionIndex].longitude,
     };
 
-    longitudeElt.innerHTML = message.longitude;
-    latitudeElt.innerHTML = message.latitude;
+    longitudeElt.value = message.longitude;
+    latitudeElt.value = message.latitude;
 
+    currentPositionIndex += 1;
     socket.emit('POSITION_CHANGE_EVENT', message);
   }, 2000);
 }
