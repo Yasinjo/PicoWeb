@@ -13,7 +13,13 @@ const myPositionDiv = document.getElementById('my_position');
 
 const driverInfoKeys = ['driver_id', 'driver_full_name', 'ambulance_registration_number', 'driver_longitude', 'driver_latitude'];
 const driverInfo = {};
+let currentPositionIndex = 0;
 let currentAlarmID;
+
+const staticPosition = [
+  { latitude: 33.698424, longitude: -7.383894 },
+  { latitude: 33.698638, longitude: -7.383121 }
+  ];
 
 for (const key of driverInfoKeys) {
   driverInfo[key] = document.getElementById(key);
@@ -90,19 +96,24 @@ function socketAuthentication() {
 }
 
 function changePosition() {
-  setInterval(() => {
+  intervalID = setInterval(() => {
+    if (currentPositionIndex === staticPosition.length) {
+      // clearInterval(intervalID);
+      currentPositionIndex = 0;
+      return;
+    }
     const message = {
-      longitude: Math.random() * 100000,
-      latitude: Math.random() * 100000
+      latitude: staticPosition[currentPositionIndex].latitude,
+      longitude: staticPosition[currentPositionIndex].longitude,
     };
 
     longitudeElt.value = message.longitude;
     latitudeElt.value = message.latitude;
 
+    currentPositionIndex += 1;
     socket.emit('POSITION_CHANGE_EVENT', message);
   }, 2000);
 }
-
 function sendFeedback() {
   const message = {
     alarm_id: currentAlarmID,
