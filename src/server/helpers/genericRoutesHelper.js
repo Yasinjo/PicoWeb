@@ -34,7 +34,11 @@ function saveUser(request, response, accountType, dataKeys, BOSchema, uploadsRep
       .catch((err) => {
         response.status(400).json({ success: false, error: err });
       });
-  }).catch(() => response.status(405).json({ success: false, error: PHONE_DUPLICATION_ERROR }));
+  }).catch((err) => {
+    console.log('Error DAO save user :');
+    console.log(err);
+    response.status(405).json({ success: false, error: PHONE_DUPLICATION_ERROR });
+  });
 }
 
 /*
