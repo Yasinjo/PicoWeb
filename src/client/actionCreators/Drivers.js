@@ -79,6 +79,7 @@ export function addDriverHelper(dispatch, driverData) {
       .catch((response) => {
         console.log('addAmbulanceHelper Error');
         console.log(response);
+        response.json(err => console.log(err));
         reject(PHONE_NUMBER_ALREADY_EXISTS);
       });
   });
